@@ -1,0 +1,47 @@
+---
+import '../ui/global.css';
+import { attributions, site } from '../config/site.ts';
+import { common } from '../i18n/common.ts';
+import { createTranslator, DEFAULT_LOCALE, type Locale } from '../i18n/index.ts';
+
+interface Props {
+  title?: string;
+  description?: string;
+  locale?: Locale;
+}
+
+const { title, description, locale = DEFAULT_LOCALE } = Astro.props;
+const t = createTranslator(common, locale);
+const pageTitle = title ? `${title} · ${site.name}` : `${site.name} — ${t('site.tagline')}`;
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="min-h-dvh flex flex-col">
+    <main class="flex-1 mx-auto w-full max-w-3xl px-4 py-10">
+      <slot />
+    </main>
+    <footer class="mx-auto w-full max-w-3xl px-4 py-6 text-sm text-ink-muted">
+      <p class="font-medium">{t('footer.credits')}</p>
+      <ul>
+        {
+          attributions.map((a) => (
+            <li>
+              <a class="underline" href={a.href} rel="noopener">
+                {a.text}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="mt-2">{t('footer.nonCommercial')}</p>
+    </footer>
+  </body>
+</html>

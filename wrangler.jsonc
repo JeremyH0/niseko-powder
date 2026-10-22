@@ -1,0 +1,40 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "niseko-powder",
+	// Custom entry: Astro handles `fetch`, our job registry handles `scheduled` (cron).
+	"main": "./src/worker.ts",
+	// Latest date supported by the locally installed workerd. Bump when upgrading wrangler.
+	"compatibility_date": "2026-10-12",
+	"compatibility_flags": ["nodejs_compat"],
+	"upload_source_maps": true,
+	// The Astro adapter (Cloudflare Vite plugin) fills in the assets directory at build time.
+	"assets": {
+		"binding": "ASSETS",
+	},
+	"observability": {
+		"enabled": true,
+	},
+	// Hourly data refresh. Cron runs in UTC; minute 10 gives JMA time to publish the :00 reading.
+	"triggers": {
+		"crons": ["10 * * * *"],
+	},
+	// No IDs on purpose: wrangler auto-provisions these on first `wrangler deploy`
+	// (and creates local copies for `astro dev`), then writes the IDs back here.
+	"kv_namespaces": [
+		{
+			// Latest normalized `Conditions` JSON (one key per location).
+			"binding": "CONDITIONS",
+		},
+	],
+	"d1_databases": [
+		{
+			// Daily season history (Phase 4).
+			"binding": "HISTORY_DB",
+			"database_name": "niseko-powder-history",
+			"migrations_dir": "migrations",
+		},
+	],
+	"vars": {
+		"SITE_ENV": "production",
+	},
+}

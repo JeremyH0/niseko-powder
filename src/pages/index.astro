@@ -1,0 +1,38 @@
+---
+// Phase 0 placeholder: proves on-demand rendering + the KV binding work through the
+// custom Worker entry. Replaced by the real homepage in Phase 2.
+import { env } from 'cloudflare:workers';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { common } from '../i18n/common.ts';
+import { createTranslator, defineMessages } from '../i18n/index.ts';
+import { HEARTBEAT_KEY } from '../worker/jobs/heartbeat.ts';
+
+export const prerender = false;
+
+const strings = defineMessages({
+  en: {
+    placeholder: 'Phase 0 scaffold — the real answer arrives in Phase 2.',
+    lastCron: 'Last cron run:',
+    never: 'never',
+  },
+});
+const t = createTranslator(strings);
+const tc = createTranslator(common);
+
+const heartbeat = await env.CONDITIONS.get<{ ranAt: string; cron: string }>(HEARTBEAT_KEY, 'json');
+const lastRun = heartbeat
+  ? new Intl.DateTimeFormat('en-GB', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: 'Asia/Tokyo',
+    }).format(new Date(heartbeat.ranAt))
+  : null;
+---
+
+<BaseLayout>
+  <h1 class="font-display text-4xl">{tc('site.tagline')}</h1>
+  <p class="mt-4 text-ink-muted">{t('placeholder')}</p>
+  <p class="mt-6">
+    {t('lastCron')} <strong>{lastRun ? `${lastRun} JST` : t('never')}</strong>
+  </p>
+</BaseLayout>

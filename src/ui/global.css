@@ -1,0 +1,37 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens. Placeholder values until the Phase 3 art direction is chosen;
+ * components use these names (bg-surface, text-ink, font-display…), never raw colours.
+ */
+@theme {
+  --color-surface: #f6f7f9;
+  --color-surface-raised: #ffffff;
+  --color-ink: #0f1a2a;
+  --color-ink-muted: #4a5568;
+  --color-accent: #1d4ed8;
+  --color-warning: #92400e;
+
+  --font-display: ui-serif, Georgia, serif;
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background: var(--color-surface);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
