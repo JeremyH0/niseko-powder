@@ -17,6 +17,11 @@ describe('createTranslator', () => {
     expect(t('both', { a: 1, b: 2 })).toBe('1 and 2');
   });
 
+  it('falls back to the key for unknown messages instead of crashing', () => {
+    const loose = createTranslator(messages as unknown as Parameters<typeof createTranslator<string>>[0]);
+    expect(loose('reason.gone', { cm: 1 })).toBe('reason.gone');
+  });
+
   it('leaves unknown placeholders visible instead of printing "undefined"', () => {
     expect(t('both', { a: 1 })).toBe('1 and {b}');
   });

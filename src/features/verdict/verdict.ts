@@ -6,14 +6,12 @@ import { findPoint, nearestHour } from '../../lib/data/forecast.ts';
 import type { Conditions } from '../../lib/data/types.ts';
 import { jstParts } from '../../lib/time.ts';
 
-export type VerdictWord = 'epic' | 'good' | 'some' | 'nope' | 'notYet' | 'soon' | 'unknown';
+export type VerdictWord = 'epic' | 'good' | 'some' | 'nope' | 'soon' | 'unknown';
 export type HeadlineKey =
   | 'fresh'
   | 'freshMountain'
   | 'some'
-  | 'firstSnowSummit'
-  | 'preseason'
-  | 'preseasonNext'
+  | 'summitSnow'
   | 'snowingNow'
   | 'noneNext'
   | 'none'
@@ -66,11 +64,12 @@ export function heroModel(c: Conditions | null, now: Date): HeroModel {
   const weather = weatherState(c, now);
   const summit = point(c, 'summit');
   const summitFresh = summit?.past24hSnowfallCm ?? 0;
-  const summitTodayMax = summit?.daily[0]?.tMaxC ?? null;
+  const summitTodayMin = summit?.daily[0]?.tMinC ?? null;
 
   const p = c?.powder;
   const preSeason = p?.preSeason ?? false;
-  const snowcap = !preSeason || summitFresh >= 1 || (summitTodayMax !== null && summitTodayMax <= 0);
+  // Early season: show a cap once the summit has had snow and it's cold enough up there to stay.
+  const snowcap = !preSeason || summitFresh >= 1 || (summitTodayMin !== null && summitTodayMin <= 0);
   const next = p?.nextBigSnow ?? null;
   const base = { sky, weather, snowcap, nextDay: next?.date ?? null };
 
@@ -82,14 +81,11 @@ export function heroModel(c: Conditions | null, now: Date): HeroModel {
   }
   if (p.verdict === 'some') return { ...base, word: 'some', headline: 'some', cm: p.freshCm };
 
-  if (preSeason) {
-    if (summitFresh >= 5) return { ...base, word: 'notYet', headline: 'firstSnowSummit', cm: summitFresh };
-    if (next) return { ...base, word: 'notYet', headline: 'preseasonNext', cm: next.snowfallCm };
-    return { ...base, word: 'notYet', headline: 'preseason', cm: 0 };
-  }
   if (weather === 'snow' && p.next24hCm >= 1) {
     return { ...base, word: 'soon', headline: 'snowingNow', cm: p.next24hCm };
   }
+  // Not a powder day, but the summit caught something worth mentioning.
+  if (summitFresh >= 5) return { ...base, word: 'nope', headline: 'summitSnow', cm: summitFresh };
   if (next) return { ...base, word: 'nope', headline: 'noneNext', cm: next.snowfallCm };
   return { ...base, word: 'nope', headline: 'none', cm: 0 };
 }

@@ -96,8 +96,7 @@ export type PowderReasonCode =
   | 'rain-town'
   | 'stale-observation'
   | 'no-observation'
-  | 'no-forecast'
-  | 'pre-season';
+  | 'no-forecast';
 
 export interface PowderReason {
   code: PowderReasonCode;

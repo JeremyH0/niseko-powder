@@ -1,7 +1,7 @@
 {
 	"$schema": "./node_modules/wrangler/config-schema.json",
 	"name": "niseko-powder",
-	// jeremy.hautefeuille@gmail.com's Account (the login can see several accounts).
+	// Deploy to Jeremy's personal Cloudflare account (the login can see several accounts).
 	"account_id": "34f0c32cae88c1c1ac463a01217b2221",
 	// Custom entry: Astro handles `fetch`, our job registry handles `scheduled` (cron).
 	"main": "./src/worker.ts",

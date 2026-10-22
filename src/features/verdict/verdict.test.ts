@@ -84,17 +84,22 @@ describe('heroModel', () => {
     expect(m).toMatchObject({ word: 'good', headline: 'freshMountain' });
   });
 
-  it('pre-season with first snow on the summit (22 Oct 2026)', () => {
+  it('early season, snow on the summit only (22 Oct 2026) → score-based word, summit headline', () => {
     const m = heroModel(
       conditions({ preSeason: true }, [point('summit', { past24hSnowfallCm: 23.8 }), point('mid')]),
       NOW,
     );
-    expect(m).toMatchObject({ word: 'notYet', headline: 'firstSnowSummit', cm: 23.8, snowcap: true });
+    expect(m).toMatchObject({ word: 'nope', headline: 'summitSnow', cm: 23.8, snowcap: true });
   });
 
-  it('pre-season, bare summit → no snowcap', () => {
+  it('early season, bare warm summit → no snowcap', () => {
     const m = heroModel(conditions({ preSeason: true }, [point('summit', { daily: [] }), point('mid')]), NOW);
-    expect(m).toMatchObject({ word: 'notYet', headline: 'preseason', snowcap: false });
+    expect(m).toMatchObject({ word: 'nope', headline: 'none', snowcap: false });
+  });
+
+  it('early season but a real powder score → the score wins', () => {
+    const m = heroModel(conditions({ preSeason: true, verdict: 'some', freshCm: 6 }), NOW);
+    expect(m).toMatchObject({ word: 'some', headline: 'some' });
   });
 
   it('no powder but snowing now → "Soon."', () => {

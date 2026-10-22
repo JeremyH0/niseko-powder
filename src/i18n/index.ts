@@ -24,7 +24,8 @@ export function defineMessages<K extends string>(messages: Messages<K>): Message
 /** `{name}` placeholders are replaced from `params`; unknown placeholders are left as-is. */
 export function createTranslator<K extends string>(messages: Messages<K>, locale: Locale = DEFAULT_LOCALE) {
   return (key: K, params?: Params): string => {
-    const template = messages[locale]?.[key] ?? messages.en[key];
+    // Unknown keys (e.g. a reason code from older stored data) fall back to the key, never crash.
+    const template: string = messages[locale]?.[key] ?? messages.en[key] ?? key;
     if (!params) return template;
     return template.replace(/\{(\w+)\}/g, (match, name: string) =>
       name in params ? String(params[name]) : match,

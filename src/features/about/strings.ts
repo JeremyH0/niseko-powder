@@ -29,7 +29,7 @@ export const aboutStrings = defineMessages({
       'Wind over the next 6 h: breezy (≥ {breezy} m/s mid-mountain) {breezyPts}; lift holds likely (≥ {holds} m/s, or summit gusts ≥ {gust} m/s) {holdsPts}.',
     'score.rain': 'Rain at the base in the last 24 h (≥ {mm} mm): {pts}.',
     'score.cap': 'No fresh snow means no powder: without at least 1 cm the score can’t reach “Kinda.”',
-    'score.verdicts': 'Verdicts: {epic}+ “YES!”, {good}+ “Yes.”, {some}+ “Kinda.”, below that “Nope.” (or “Not yet.” before the season starts).',
+    'score.verdicts': 'Verdicts: {epic}+ “YES!”, {good}+ “Yes.”, {some}+ “Kinda.”, below that “Nope.”',
     'score.tune': 'These thresholds will be tuned against real winter mornings. Disagree? That’s half the fun.',
 
     'limits.title': 'Honest limits',

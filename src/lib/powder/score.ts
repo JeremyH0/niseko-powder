@@ -56,8 +56,8 @@ export function computePowder({ observed, forecast, now, config = powderConfig }
   if (!observed) reasons.push({ code: 'no-observation', points: 0 });
   else if (!obsUsable) reasons.push({ code: 'stale-observation', points: 0, params: { minutes: Math.round(obsAge) } });
 
+  // Snow depth isn't measured in town yet: kept as a flag for the UI, it doesn't change the score.
   const preSeason = observed !== null && !observed.snowDepthCm.ok;
-  if (preSeason) reasons.push({ code: 'pre-season', points: 0 });
 
   const townCm = obsUsable && observed.newSnow.h24.ok ? (observed.newSnow.h24.value ?? 0) : 0;
   const mountainCm = mid?.past24hSnowfallCm ?? 0;

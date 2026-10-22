@@ -14,6 +14,8 @@ export default defineConfig({
   }),
   // We don't need user sessions. Without this, the adapter auto-provisions a SESSION KV namespace.
   session: false,
+  // ~7 KB gzipped: inlining removes the only render-blocking request.
+  build: { inlineStylesheets: 'always' },
   vite: {
     plugins: [tailwindcss()],
   },

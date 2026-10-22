@@ -36,6 +36,7 @@ function reasonText(r: PowderReason): string {
 }
 // Most informative first: things that changed the score, then context. Max 4 chips.
 const reasons = [...(powder?.reasons ?? [])]
+  .filter((r) => `reason.${r.code}` in verdictStrings.en)
   .sort((a, b) => Math.abs(b.points) - Math.abs(a.points))
   .slice(0, 4);
 

@@ -133,5 +133,8 @@ function start(canvas: HTMLCanvasElement) {
   setRate(rate);
 }
 
+// Start after first paint and load, so the canvas never competes with the answer.
 const canvas = document.querySelector<HTMLCanvasElement>('canvas[data-snowfall]');
-if (canvas) start(canvas);
+const boot = () => requestAnimationFrame(() => canvas && start(canvas));
+if (document.readyState === 'complete') boot();
+else window.addEventListener('load', boot, { once: true });
