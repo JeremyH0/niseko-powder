@@ -20,12 +20,12 @@
 	"triggers": {
 		"crons": ["10 * * * *"],
 	},
-	// No IDs on purpose: wrangler auto-provisions these on first `wrangler deploy`
-	// (and creates local copies for `astro dev`), then writes the IDs back here.
+	// Created by wrangler's auto-provisioning on the first deploy (2026-10-23).
 	"kv_namespaces": [
 		{
 			// Latest normalized `Conditions` JSON (one key per location).
 			"binding": "CONDITIONS",
+			"id": "644398cd6aa24a779358913c78ece889",
 		},
 	],
 	"d1_databases": [
@@ -33,6 +33,7 @@
 			// Daily season history (Phase 4).
 			"binding": "HISTORY_DB",
 			"database_name": "niseko-powder-history",
+			"database_id": "d09ab101-de69-4fbc-bc0a-5f6aca599b07",
 			"migrations_dir": "migrations",
 		},
 	],
