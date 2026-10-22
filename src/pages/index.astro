@@ -1,38 +1,58 @@
 ---
-// Phase 0 placeholder: proves on-demand rendering + the KV binding work through the
-// custom Worker entry. Replaced by the real homepage in Phase 2.
+/**
+ * Homepage: server-rendered from the latest Conditions in KV, so the answer is in the
+ * HTML (works with JavaScript off, and in link previews). The page only composes features.
+ */
 import { env } from 'cloudflare:workers';
-import BaseLayout from '../layouts/BaseLayout.astro';
+import { DEFAULT_LOCATION_ID } from '../config/locations.ts';
+import { site } from '../config/site.ts';
+import Next48h from '../features/forecast/Next48h.astro';
+import SevenDay from '../features/forecast/SevenDay.astro';
+import Links from '../features/links/Links.astro';
+import Outlook from '../features/outlook/Outlook.astro';
+import RightNow from '../features/right-now/RightNow.astro';
+import Share from '../features/share/Share.astro';
+import SnowCanvas from '../features/snowfall/SnowCanvas.astro';
+import { verdictCopy } from '../features/verdict/copy.ts';
+import Hero from '../features/verdict/Hero.astro';
 import { common } from '../i18n/common.ts';
-import { createTranslator, defineMessages } from '../i18n/index.ts';
-import { HEARTBEAT_KEY } from '../worker/jobs/heartbeat.ts';
+import { createTranslator } from '../i18n/index.ts';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { readConditions } from '../lib/data/store.ts';
+import { minutesBetween } from '../lib/time.ts';
+import { REFRESH_HEADER, SELF_HEAL_AFTER_MINUTES } from '../worker/self-heal.ts';
 
 export const prerender = false;
 
-const strings = defineMessages({
-  en: {
-    placeholder: 'Phase 0 scaffold — the real answer arrives in Phase 2.',
-    lastCron: 'Last cron run:',
-    never: 'never',
-  },
-});
-const t = createTranslator(strings);
-const tc = createTranslator(common);
+const now = new Date();
+const conditions = await readConditions(env.CONDITIONS, DEFAULT_LOCATION_ID);
 
-const heartbeat = await env.CONDITIONS.get<{ ranAt: string; cron: string }>(HEARTBEAT_KEY, 'json');
-const lastRun = heartbeat
-  ? new Intl.DateTimeFormat('en-GB', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-      timeZone: 'Asia/Tokyo',
-    }).format(new Date(heartbeat.ranAt))
-  : null;
+// Fresh deploy or a broken cron: ask the Worker to refresh in the background (rate-limited).
+if (!conditions || minutesBetween(conditions.generatedAt, now) > SELF_HEAL_AFTER_MINUTES) {
+  Astro.response.headers.set(REFRESH_HEADER, '1');
+}
+Astro.response.headers.set('Cache-Control', 'public, max-age=60');
+
+const tc = createTranslator(common);
+const copy = verdictCopy(conditions, now);
+const title = `${copy.word} ${copy.question} · ${site.name}`;
+const description = `${copy.word} ${copy.headline} ${tc('site.description')}`;
 ---
 
-<BaseLayout>
-  <h1 class="font-display text-4xl">{tc('site.tagline')}</h1>
-  <p class="mt-4 text-ink-muted">{t('placeholder')}</p>
-  <p class="mt-6">
-    {t('lastCron')} <strong>{lastRun ? `${lastRun} JST` : t('never')}</strong>
-  </p>
+<BaseLayout title={title} description={description}>
+  <Hero conditions={conditions} now={now}>
+    <SnowCanvas slot="atmosphere" part="canvas" conditions={conditions} now={now} />
+    <SnowCanvas slot="controls" part="control" conditions={conditions} now={now} />
+  </Hero>
+
+  <main id="main" class="pb-16">
+    <Outlook conditions={conditions} now={now} />
+    <div class="mx-auto mt-12 flex w-full max-w-5xl min-w-0 flex-col gap-16 px-4 sm:px-6">
+      <Share word={copy.word} headline={copy.headline} url={Astro.url.origin + '/'} />
+      <Next48h conditions={conditions} now={now} />
+      <SevenDay conditions={conditions} now={now} />
+      <RightNow conditions={conditions} now={now} />
+      <Links />
+    </div>
+  </main>
 </BaseLayout>

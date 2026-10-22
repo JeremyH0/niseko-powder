@@ -17,10 +17,12 @@
     "test:watch": "vitest",
     "probe": "node scripts/probe-data.ts",
     "cf-typegen": "wrangler types",
-    "postinstall": "wrangler types"
+    "postinstall": "wrangler types",
+    "smoke": "node scripts/smoke.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.2",
+    "@fontsource-variable/fraunces": "^5.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.4.2",
     "tailwindcss": "^4.3.3"

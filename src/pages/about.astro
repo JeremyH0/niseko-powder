@@ -1,0 +1,79 @@
+---
+/** Methodology page. Built from the same config the code uses, so it can't drift. Static. */
+import { getLocation } from '../config/locations.ts';
+import { powderConfig as c } from '../config/powder.ts';
+import { site } from '../config/site.ts';
+import { aboutStrings } from '../features/about/strings.ts';
+import { createTranslator } from '../i18n/index.ts';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../ui/Section.astro';
+
+export const prerender = true;
+
+const t = createTranslator(aboutStrings);
+const location = getLocation();
+const s = location.station;
+const pts = (n: number) => (n > 0 ? `+${n}` : `−${Math.abs(n)}`);
+---
+
+<BaseLayout title={`${t('title')} · ${site.name}`} description={t('description')}>
+  <main id="main" class="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
+    <a href="/" class="text-sm font-medium text-snow underline">{t('back')}</a>
+    <h1 class="mt-6 font-display text-5xl font-black tracking-tight">{t('title')}</h1>
+    <p class="mt-4 text-xl leading-snug text-ink-muted">{t('lead')}</p>
+
+    <div class="mt-12 flex flex-col gap-12 leading-relaxed">
+      <Section id="sources" title={t('sources.title')}>
+        <div class="space-y-4">
+          <p>{t('sources.jma', { name: `${s.nameJa} (${s.nameEn})`, id: s.id, elevation: s.elevationM })}</p>
+          <p class="rounded-2xl bg-warn-bg px-4 py-3 text-warn-ink">{t('sources.jmaCaveat')}</p>
+          <p>{t('sources.om')}</p>
+          <ul class="num list-disc space-y-1 pl-6">
+            {
+              location.forecastPoints.map((p) => (
+                <li>{t('sources.point', { label: p.label, lat: p.lat, lon: p.lon, elevation: p.elevationM })}</li>
+              ))
+            }
+          </ul>
+          <p>{t('sources.refresh')}</p>
+        </div>
+      </Section>
+
+      <Section id="score" title={t('score.title')}>
+        <p>{t('score.intro')}</p>
+        <ul class="mt-4 list-disc space-y-2 pl-6">
+          <li>{t('score.fresh')}</li>
+          <li>{t('score.more', { max: c.upcoming.maxPoints })}</li>
+          <li>{t('score.cold', { cold: c.coldBelowC, coldPts: c.coldPoints, warm: c.warmAboveC, warmPts: pts(c.warmPoints) })}</li>
+          <li>
+            {
+              t('score.wind', {
+                breezy: c.breezyMs,
+                breezyPts: pts(c.breezyPoints),
+                holds: c.holdsMs,
+                gust: c.holdsGustMs,
+                holdsPts: pts(c.holdsPoints),
+              })
+            }
+          </li>
+          <li>{t('score.rain', { mm: c.rainBaseMm, pts: pts(c.rainBasePoints) })}</li>
+          <li>{t('score.cap')}</li>
+        </ul>
+        <p class="mt-4 font-medium">{t('score.verdicts', c.verdicts)}</p>
+        <p class="mt-2 text-ink-muted">{t('score.tune')}</p>
+      </Section>
+
+      <Section id="limits" title={t('limits.title')}>
+        <ul class="list-disc space-y-2 pl-6">
+          <li>{t('limits.1')}</li>
+          <li>{t('limits.2')}</li>
+          <li>{t('limits.3')}</li>
+        </ul>
+      </Section>
+
+      <Section id="privacy" title={t('privacy.title')}>
+        <p>{t('privacy.text')}</p>
+      </Section>
+    </div>
+  </main>
+</BaseLayout>

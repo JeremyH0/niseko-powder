@@ -6,10 +6,16 @@
 import { handle } from '@astrojs/cloudflare/handler';
 import { jobs } from './worker/jobs/index.ts';
 import { runJobs } from './worker/scheduled.ts';
+import { REFRESH_HEADER, refreshIfUnlocked } from './worker/self-heal.ts';
 
 export default {
-  fetch(request, env, ctx) {
-    return handle(request, env, ctx);
+  async fetch(request, env, ctx) {
+    const response = await handle(request, env, ctx);
+    if (!response.headers.has(REFRESH_HEADER)) return response;
+    ctx.waitUntil(refreshIfUnlocked(env, new Date()));
+    const clean = new Response(response.body, response);
+    clean.headers.delete(REFRESH_HEADER);
+    return clean;
   },
 
   async scheduled(controller, env) {

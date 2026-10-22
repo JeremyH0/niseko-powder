@@ -1,0 +1,63 @@
+---
+/**
+ * Live snowfall over the hero, driven by the real snowfall rate and wind.
+ * Purely decorative (aria-hidden); the numbers are in the page as text.
+ */
+import { createTranslator, DEFAULT_LOCALE, type Locale } from '../../i18n/index.ts';
+import type { Conditions } from '../../lib/data/types.ts';
+import { formatClock, formatWeekday } from '../../lib/format.ts';
+import Icon from '../../ui/Icon.astro';
+import { snowfallParams } from './intensity.ts';
+import { snowfallStrings } from './strings.ts';
+
+interface Props {
+  conditions: Conditions | null;
+  now: Date;
+  locale?: Locale;
+  /** Which part to render: the canvas (behind content) or the preview control. */
+  part: 'canvas' | 'control';
+}
+
+const { conditions, now, locale = DEFAULT_LOCALE, part } = Astro.props;
+const t = createTranslator(snowfallStrings, locale);
+const p = snowfallParams(conditions, now);
+const when = p.preview ? `${formatWeekday(p.preview.time)} ${formatClock(p.preview.time)}` : '';
+---
+
+{
+  part === 'canvas' && (
+    <canvas
+      data-snowfall
+      data-rate={p.rateCmH}
+      data-wind={p.windMs}
+      data-wind-from={p.windFromDeg}
+      data-temp={p.tempC}
+      class="pointer-events-none absolute inset-0 z-[5] h-full w-full"
+      aria-hidden="true"
+    />
+  )
+}
+{
+  part === 'control' && p.preview && (
+    <div class="js-only absolute right-4 bottom-4 z-20 flex flex-col items-end gap-1 sm:right-6">
+      <button
+        type="button"
+        hidden
+        data-snow-preview
+        data-rate={p.preview.rateCmH}
+        data-start-label={t('preview')}
+        data-stop-label={t('stop')}
+        data-preview-text={t('previewing', { rate: p.preview.rateCmH.toFixed(1), when })}
+        aria-pressed="false"
+        class="flex items-center gap-2 rounded-full bg-ink/80 px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur hover:bg-ink"
+      >
+        <Icon name="snow" size={16} />
+        <span data-label>{t('preview')}</span>
+      </button>
+      <p data-snow-status role="status" class="max-w-[16rem] text-right text-xs text-ink-muted" />
+    </div>
+  )
+}
+<script>
+  import './snowfall.ts';
+</script>

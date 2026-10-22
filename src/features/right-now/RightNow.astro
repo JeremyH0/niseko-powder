@@ -1,0 +1,94 @@
+---
+import { site } from '../../config/site.ts';
+import { createTranslator, DEFAULT_LOCALE, type Locale } from '../../i18n/index.ts';
+import type { Conditions, Reading } from '../../lib/data/types.ts';
+import { compass, formatAge, formatClock, formatCm, formatNumber, formatTemp } from '../../lib/format.ts';
+import { minutesBetween } from '../../lib/time.ts';
+import Icon from '../../ui/Icon.astro';
+import Section from '../../ui/Section.astro';
+import StatTile from '../../ui/StatTile.astro';
+import { rightNowStrings } from './strings.ts';
+
+interface Props {
+  conditions: Conditions | null;
+  now: Date;
+  locale?: Locale;
+}
+const { conditions, now, locale = DEFAULT_LOCALE } = Astro.props;
+const t = createTranslator(rightNowStrings, locale);
+const obs = conditions?.observed ?? null;
+
+const v = (r: Reading<number> | undefined) => (r?.ok ? r.value : null);
+const age = obs ? minutesBetween(obs.observedAt, now) : 0;
+const stale = obs !== null && age > site.staleAfterMinutes;
+const snowMeasured = obs?.snowDepthCm.ok ?? false;
+const newSnowMeasured = obs?.newSnow.h24.ok ?? false;
+const dir = v(obs?.windDirDeg);
+---
+
+<Section id="right-now" title={t('title')} badge={t('badge')} intro={t('intro')}>
+  {
+    stale && (
+      <p role="status" class="mb-4 flex items-start gap-2 rounded-2xl bg-warn-bg px-4 py-3 text-sm font-medium text-warn-ink">
+        <Icon name="warning" size={18} class="mt-0.5 shrink-0" />
+        {t('stale', { age: formatAge(age) })}
+      </p>
+    )
+  }
+  {
+    obs ? (
+      <>
+        <dl class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <StatTile
+            label={t('depth.label')}
+            value={snowMeasured ? formatCm(v(obs.snowDepthCm)) : '—'}
+            unit={snowMeasured ? 'cm' : undefined}
+            note={snowMeasured ? undefined : t('depth.off')}
+            muted={!snowMeasured}
+          />
+          <StatTile
+            label={t('new.label')}
+            value={newSnowMeasured ? formatCm(v(obs.newSnow.h24)) : '—'}
+            unit={newSnowMeasured ? 'cm' : undefined}
+            note={
+              newSnowMeasured
+                ? t('new.note', {
+                    h1: formatCm(v(obs.newSnow.h1)),
+                    h6: formatCm(v(obs.newSnow.h6)),
+                    h12: formatCm(v(obs.newSnow.h12)),
+                  })
+                : t('new.off')
+            }
+            muted={!newSnowMeasured}
+          />
+          <StatTile
+            label={t('temp.label')}
+            value={formatTemp(v(obs.tempC))}
+            note={v(obs.gustMs) !== null ? t('temp.note', { gust: formatNumber(v(obs.gustMs)) }) : undefined}
+          />
+          <StatTile
+            label={t('wind.label')}
+            value={v(obs.windMs) === 0 ? t('wind.calm') : formatNumber(v(obs.windMs))}
+            unit={v(obs.windMs) ? 'm/s' : undefined}
+            note={dir !== null ? t('wind.from', { dir: compass(dir) }) : undefined}
+          >
+            {dir !== null && (
+              <Icon name="arrow" size={18} rotate={dir + 180} class="ml-1 inline-block align-baseline text-snow" />
+            )}
+          </StatTile>
+          <StatTile
+            label={t('precip.label')}
+            value={formatNumber(v(obs.precip24hMm), 1)}
+            unit="mm"
+            note={t('precip.note', { h1: formatNumber(v(obs.precip1hMm), 1) })}
+          />
+        </dl>
+        <p class="num mt-3 text-xs text-ink-muted">
+          {t('observed', { time: formatClock(obs.observedAt), age: formatAge(age), id: obs.stationId })}
+        </p>
+      </>
+    ) : (
+      <p class="rounded-2xl border border-line bg-card p-4 text-ink-muted">{t('none')}</p>
+    )
+  }
+</Section>

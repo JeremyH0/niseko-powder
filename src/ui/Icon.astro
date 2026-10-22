@@ -1,0 +1,68 @@
+---
+/** Small stroke icons (24×24). Decorative unless `label` is given. */
+export type IconName =
+  | 'snow'
+  | 'rain'
+  | 'cloud'
+  | 'sun'
+  | 'partly'
+  | 'fog'
+  | 'wind'
+  | 'arrow'
+  | 'external'
+  | 'share'
+  | 'lift'
+  | 'camera'
+  | 'warning'
+  | 'road'
+  | 'clock';
+
+interface Props {
+  name: IconName;
+  size?: number;
+  label?: string;
+  class?: string;
+  /** Rotation in degrees (used for wind arrows). */
+  rotate?: number;
+}
+
+const { name, size = 20, label, class: className, rotate } = Astro.props;
+
+const paths: Record<IconName, string> = {
+  snow: 'M12 2v20M4.2 6.5l15.6 11M4.2 17.5l15.6-11M9 3.5l3 2.5 3-2.5M9 20.5l3-2.5 3 2.5',
+  rain: 'M7 17a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 9a4 4 0 0 1-1 7.9M8 19l-1 2M12 19l-1 2M16 19l-1 2',
+  cloud: 'M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8H7z',
+  sun: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4',
+  partly: 'M9 3v1.5M3.5 9H5M4.9 4.9l1 1M13.1 4.9l-1 1M6 11a3 3 0 1 1 5.5-1.7M8 20a4 4 0 1 1 .7-7.9A5 5 0 0 1 18 13a3.5 3.5 0 0 1-.5 7H8z',
+  fog: 'M4 10h16M3 14h18M6 18h12M7 6h10',
+  wind: 'M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8',
+  arrow: 'M12 20V4M6 10l6-6 6 6',
+  external: 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
+  share: 'M12 15V3M7 8l5-5 5 5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7',
+  lift: 'M2 5l20 4M12 7v5M8 12h8l-1 7H9l-1-7z',
+  camera: 'M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+  warning: 'M12 3l10 18H2L12 3zM12 10v5M12 18v.5',
+  road: 'M8 3L4 21M16 3l4 18M12 4v3M12 11v3M12 18v3',
+  clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
+};
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  width={size}
+  height={size}
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.8"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class={className}
+  style={rotate !== undefined ? `transform: rotate(${rotate}deg)` : undefined}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  focusable="false"
+>
+  <path d={paths[name]}></path>
+</svg>

@@ -17,20 +17,36 @@ in the same commit as any structural change.
 
 ```
 src/
-  worker.ts              Worker entry: fetch → Astro, scheduled → job registry
+  worker.ts              Worker entry: fetch → Astro (+ self-heal), scheduled → job registry
   worker/
     scheduled.ts         runJobs(): runs due jobs in parallel, isolates failures
-    jobs/                one file per scheduled job + index.ts registry
-  lib/data/
-    types.ts             the `Conditions` contract between Worker and UI
-    providers/           one file per external source (fetch → normalize → typed result)
-  config/                locations, flags, site constants (decisions, not logic)
+    self-heal.ts         background refresh when KV is empty/very old (KV lock, max 1 per 10 min)
+    jobs/                heartbeat, refresh-conditions (+ index.ts registry)
+  lib/
+    time.ts              JST helpers (fixed +09:00), JMA block names
+    format.ts            display formatting (JST times, °, cm, compass)
+    powder/score.ts      the powder score (pure)
+    data/
+      types.ts           the `Conditions` contract between Worker and UI
+      providers/         jma-amedas.ts, open-meteo.ts (fetch → normalize → typed result)
+      build-conditions.ts  merge fresh results with the previous good data
+      store.ts           KV keys: conditions:<locationId>
+      forecast.ts        small shared readers (findPoint, nearestHour, hoursAhead)
+  config/                locations, powder thresholds, links, flags, site constants
   i18n/                  createTranslator / defineMessages + shared strings
-  ui/                    design tokens + shared primitives (StatTile, Card…)
-  features/<name>/       user-facing features: components, strings, helpers, tests
-  layouts/               page shells (head, footer with attributions)
-  pages/                 routes; compose features, contain little logic
-scripts/                 one-off Node scripts (run with plain `node`, no build)
+  ui/                    tokens (global.css), Icon, Section, StatTile, weather-icon
+  features/
+    verdict/             hero: big word, headline, score ring, reasons, sky, mountains
+    snowfall/            live canvas (client script) + intensity maths
+    outlook/             at-a-glance tiles (fresh / next 24 h / next big snow / town now)
+    forecast/            48-hour SVG chart + 7-day list
+    right-now/           Kutchan town observations + stale banner
+    links/               official links (from config/links.ts)
+    share/               share sheet / copy link
+    about/               methodology copy
+  layouts/BaseLayout.astro  head/meta/manifest, skip link, footer + attributions
+  pages/                 index (SSR), about (static), 404 (static), api/conditions.json
+scripts/                 probe-data.ts (fixtures), smoke.ts (checks a running site)
 tests/fixtures/          real API responses used by tests
 migrations/              D1 SQL migrations (Phase 4)
 docs/                    brief, roadmap, data sources, this file, backlog
@@ -54,7 +70,7 @@ flowchart LR
     OM[Open-Meteo<br/>summit / mid / base]
   end
   subgraph Worker["Cloudflare Worker (one deploy)"]
-    CRON[scheduled()<br/>hourly at :10 UTC] --> JOBS[jobs registry]
+    CRON[scheduled()<br/>hourly at :10] --> JOBS[jobs registry]
     JOBS --> P1[providers/jma-amedas]
     JOBS --> P2[providers/open-meteo]
     P1 & P2 --> NORM[normalize + powder score]
@@ -72,7 +88,12 @@ flowchart LR
 
 Key properties:
 - Visitors **never** trigger calls to JMA or Open-Meteo. One cron run per hour does all fetching.
-- A failing source never overwrites good data in KV (the job keeps the previous value; Phase 1).
+- A failing source never overwrites good data in KV (`build-conditions.ts` keeps the previous
+  value and records the error in `sources`).
+- Safety net: if the homepage finds no data or data older than 3 h, it sets a header and the
+  Worker refreshes once in the background (`self-heal.ts`, KV lock = at most once per 10 min).
+- Client JavaScript is tiny and optional (~2.5 KB inline: snowfall canvas, share button).
+  Animations are CSS and switch off with `prefers-reduced-motion`.
 - Pages render the answer server-side, so it works with JavaScript off and in link previews.
 
 ## Free-plan budget (Workers Free, checked 2026-10-22)
@@ -100,10 +121,14 @@ than upgrading.
 | `npm test` | Unit tests (Vitest). |
 | `npm run build` | `wrangler types` + `astro check` + build to `dist/`. |
 | `npm run preview` | Serve the production build locally in workerd. |
-| `npm run probe` | Refresh real API fixtures in `tests/fixtures/`. |
+| `npm run probe` | Add real API fixtures to `tests/fixtures/` (never overwrites). |
+| `npm run smoke -- <url>` | Check a running site (local preview or live) end to end. |
+| `npm run deploy` | Build + `wrangler deploy`. |
 | `npx wrangler deploy --dry-run` | Validate the deploy bundle without uploading. |
 
-Local KV/D1 data lives in `.wrangler/state` (gitignored). KV/D1 in `wrangler.jsonc` have no IDs
+Notes: local dev does **not** run the cron by itself — fire it with the curl above. Stop the dev
+server before `npm run build` (`npx astro dev stop`): running both at once can make `astro check`
+hang. Local KV/D1 data lives in `.wrangler/state` (gitignored). KV/D1 in `wrangler.jsonc` have no IDs
 on purpose: wrangler auto-provisions them on the first `wrangler deploy` and writes IDs back.
 
 ## Checklists

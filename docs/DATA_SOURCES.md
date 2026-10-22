@@ -141,9 +141,22 @@ Fixtures in `tests/fixtures/` (see its README).
 - Station 16206 蘭越 (Rankoshi) is type **C** with `elems` `11112110`; its snow element is `2`,
   not `1` — check what that means before using it.
 
+**Found while building Phase 1 (2026-10-22)**
+- Snow fields (`snow`, `snow1h/6h/12h/24h`) appear **only on the :00 rows**; the 10-minute rows
+  don't have them. The provider takes the newest row that has each field (max 70 min old).
+- `maxTempTime` / `minTempTime` / `gustTime` look like **UTC** (e.g. min temp at "22:36" in a file
+  that ends at 14:50 JST). Unverified — don't display them until checked.
+- `jma_seamless` with `past_days=1, forecast_days=7` returns 8 daily rows and 192 hourly rows;
+  base and mid share a grid cell (42.85, 140.6875); summit is its own (42.9, 140.625).
+
 ---
 
-## Normalized contract (draft — refine in Phase 1)
+## Normalized contract
+
+Implemented in `src/lib/data/types.ts` (the source of truth — the draft below is the original
+sketch). Main changes: observed/forecast can be `null` when never fetched, a `sources` status
+block, hourly window from −24 h to +48 h, per-point past/next 24 h snowfall, and powder
+`reasons` as codes + numbers (translated in the UI) instead of English strings.
 
 ```ts
 type Reading<T> = { value: T | null; ok: boolean };   // ok = quality flag was normal

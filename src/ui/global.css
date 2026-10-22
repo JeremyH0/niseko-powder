@@ -1,28 +1,191 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/fraunces/wght.css';
 
 /*
- * Design tokens. Placeholder values until the Phase 3 art direction is chosen;
- * components use these names (bg-surface, text-ink, font-display…), never raw colours.
+ * Design tokens — "snow globe" art direction.
+ * Content surfaces follow the visitor's light/dark preference (AA contrast in both).
+ * The hero sky has its own palette driven by JST time of day and the weather (see .sky below).
  */
-@theme {
-  --color-surface: #f6f7f9;
-  --color-surface-raised: #ffffff;
-  --color-ink: #0f1a2a;
-  --color-ink-muted: #4a5568;
-  --color-accent: #1d4ed8;
-  --color-warning: #92400e;
+:root {
+  --paper: #eef2f7;
+  --card: #ffffff;
+  --ink: #0d1b2e;
+  --ink-muted: #475569;
+  --line: #d9e1ea;
+  --snow: #2f6fd6;
+  --snow-soft: #9cc3f5;
+  --rain: #b45309;
+  --rain-soft: #f3c48b;
+  --good: #0f766e;
+  --warn-bg: #fff4e5;
+  --warn-ink: #8a3b00;
+  --highlight: #e8f1ff;
+}
 
-  --font-display: ui-serif, Georgia, serif;
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0a1120;
+    --card: #111b2e;
+    --ink: #e7eef8;
+    --ink-muted: #a3b3c9;
+    --line: #22314b;
+    --snow: #7db3ff;
+    --snow-soft: #2f5ea8;
+    --rain: #f6b26b;
+    --rain-soft: #7a4a17;
+    --good: #5eead4;
+    --warn-bg: #3a2408;
+    --warn-ink: #ffd8a8;
+    --highlight: #15274a;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-snow: var(--snow);
+  --color-snow-soft: var(--snow-soft);
+  --color-rain: var(--rain);
+  --color-rain-soft: var(--rain-soft);
+  --color-good: var(--good);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-ink: var(--warn-ink);
+  --color-highlight: var(--highlight);
+
+  --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
 }
 
 @layer base {
   html {
     font-family: var(--font-sans);
-    color: var(--color-ink);
-    background: var(--color-surface);
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background: var(--paper);
+  }
+  .num,
+  table {
     font-variant-numeric: tabular-nums;
   }
+  :focus-visible {
+    outline: 3px solid var(--snow);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  a {
+    text-underline-offset: 3px;
+  }
+}
+
+/* ---------------------------------------------------------------- Sky (hero) */
+
+.sky {
+  --sky-top: #0a1533;
+  --sky-bottom: #2a3d6e;
+  --ridge-far: #33477a;
+  --ridge-mid: #1d2b52;
+  --cap: #f3f7ff;
+  --ring: #ffffff;
+  color: #fff;
+  background:
+    radial-gradient(120% 70% at 70% 0%, rgb(255 255 255 / 0.08), transparent 60%),
+    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 78%);
+}
+.sky[data-sky='dawn'] {
+  --sky-top: #1d2a57;
+  --sky-bottom: #c9878f;
+  --ridge-far: #7a6f99;
+  --ridge-mid: #3b3d6b;
+}
+.sky[data-sky='day'] {
+  --sky-top: #174a8b;
+  --sky-bottom: #7fb2e5;
+  --ridge-far: #9fc1e4;
+  --ridge-mid: #4f7fb3;
+}
+.sky[data-sky='dusk'] {
+  --sky-top: #1b1f4b;
+  --sky-bottom: #d6806c;
+  --ridge-far: #8a6a8c;
+  --ridge-mid: #3a2f5c;
+}
+/* Weather washes over the time-of-day palette. */
+.sky[data-weather='snow'] {
+  --sky-top: color-mix(in oklab, #3c4656 60%, var(--sky-top));
+  --sky-bottom: color-mix(in oklab, #9aa6b6 55%, var(--sky-bottom));
+  --ridge-far: color-mix(in oklab, #c4ccd6 55%, var(--ridge-far));
+  --ridge-mid: color-mix(in oklab, #6f7a8b 50%, var(--ridge-mid));
+}
+.sky[data-weather='rain'] {
+  --sky-top: color-mix(in oklab, #2d3440 55%, var(--sky-top));
+  --sky-bottom: color-mix(in oklab, #6b7685 50%, var(--sky-bottom));
+}
+.sky[data-weather='cloud'] {
+  --sky-top: color-mix(in oklab, #34404f 30%, var(--sky-top));
+  --sky-bottom: color-mix(in oklab, #8994a3 25%, var(--sky-bottom));
+}
+.sky[data-verdict='epic'] {
+  --ring: #67e8f9;
+}
+.sky[data-verdict='good'] {
+  --ring: #a5d8ff;
+}
+.sky-text-shadow {
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 2px 24px rgb(0 0 0 / 0.18);
+}
+
+/* ---------------------------------------------------------------- Motion (CSS only) */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes ring {
+  from {
+    stroke-dashoffset: var(--ring-full);
+  }
+}
+.rise {
+  animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 90ms + 80ms);
+}
+.grow-y {
+  transform-origin: bottom;
+  animation: grow-y 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 12ms + 200ms);
+}
+.grow-x {
+  transform-origin: left;
+  animation: grow-x 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms + 150ms);
+}
+
+/* Things that need JavaScript stay hidden until it runs. */
+html:not(.js) .js-only {
+  display: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -30,6 +193,7 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;

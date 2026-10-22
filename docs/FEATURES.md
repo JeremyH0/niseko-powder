@@ -7,7 +7,7 @@ Living list. Add ideas freely; build them one at a time with the "Add a feature"
 
 ### Snow & weather
 - [ ] **Powder alerts** — opt-in email or Web Push when the forecast shows 20 cm+ overnight. (M–L)
-- [ ] **Best day this week** callout on the homepage. (S)
+- [ ] **Best day this week** callout on the homepage. (S) — partly shipped as "Next big snow".
 - [ ] **Hour-by-hour tonight** — when will the snow actually fall, so people know if it's a
       first-chair morning. (S)
 - [ ] **Snow quality indicator** — light/dry vs heavy/wet, from temperature during snowfall. (S)
@@ -48,4 +48,8 @@ Living list. Add ideas freely; build them one at a time with the "Add a feature"
 _(none yet)_
 
 ## Shipped
-_(none yet — move items here with the date when they go live)_
+- 2026-10-23 — Homepage: verdict + powder score with reasons, at-a-glance tiles (incl. **next big
+  snow**), 48-hour SVG chart (snow summit / rain base / temp mid), 7-day mountain forecast, right
+  now in Kutchan, official links, share button ("send to the group chat"), live snowfall canvas
+  with "preview the next snowfall", sky palette by JST time + weather, snowcaps that appear when
+  the summit has snow, /about methodology, JSON API, installable manifest.

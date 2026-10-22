@@ -1,0 +1,50 @@
+---
+/**
+ * Annupuri (left) and Yōtei (right) as layered ridges. Snowcaps appear when the summit
+ * has snow. The near ridge is painted in the page colour so the hero melts into the content.
+ */
+interface Props {
+  snowcap: boolean;
+  annupuriLabel: string;
+  yoteiLabel: string;
+}
+const { snowcap, annupuriLabel, yoteiLabel } = Astro.props;
+---
+
+<div class="pointer-events-none absolute inset-x-0 bottom-0" aria-hidden="true">
+  <svg viewBox="0 0 1200 300" preserveAspectRatio="xMidYMax slice" class="block h-[clamp(150px,25vw,360px)] w-full">
+    <!-- Yōtei: the near-perfect volcanic cone across the valley -->
+    <path d="M640 300 C760 250 850 120 905 78 Q930 64 955 78 C1010 120 1100 250 1220 300 Z" fill="var(--ridge-far)"></path>
+    {
+      snowcap && (
+        <path
+          d="M862 116 C880 98 894 86 905 78 Q930 64 955 78 C966 86 980 98 998 116 L980 123 L962 109 L947 126 L930 107 L913 127 L897 111 L880 124 Z"
+          fill="var(--cap)"
+          opacity="0.92"
+        />
+      )
+    }
+    <!-- Niseko Annupuri range -->
+    <path
+      d="M-20 300 L-20 190 C60 172 120 142 190 122 C232 109 262 96 300 92 C332 89 352 100 382 113 C430 132 474 122 522 142 C580 166 640 200 700 230 C760 256 820 280 900 300 Z"
+      fill="var(--ridge-mid)"></path>
+    {
+      snowcap && (
+        <path
+          d="M222 112 C250 101 272 93 300 92 C328 90 348 100 380 113 L360 120 L342 108 L325 122 L306 106 L288 121 L268 109 L247 120 Z"
+          fill="var(--cap)"
+        />
+      )
+    }
+    <text x="300" y="76" text-anchor="middle" font-size="21" fill="#fff" opacity="0.75" font-family="system-ui, sans-serif"
+      >{annupuriLabel}</text
+    >
+    <text x="930" y="52" text-anchor="middle" font-size="21" fill="#fff" opacity="0.7" font-family="system-ui, sans-serif"
+      >{yoteiLabel}</text
+    >
+    <!-- Near ridge in the page colour -->
+    <path
+      d="M-20 300 L-20 252 C120 232 260 264 420 250 C580 238 700 264 860 257 C1000 251 1100 267 1220 254 L1220 300 Z"
+      fill="var(--paper)"></path>
+  </svg>
+</div>

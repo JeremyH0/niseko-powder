@@ -5,43 +5,76 @@ import { common } from '../i18n/common.ts';
 import { createTranslator, DEFAULT_LOCALE, type Locale } from '../i18n/index.ts';
 
 interface Props {
-  title?: string;
-  description?: string;
+  title: string;
+  description: string;
   locale?: Locale;
+  /** Browser UI colour (matches the top of the hero sky). */
+  themeColor?: string;
 }
 
-const { title, description, locale = DEFAULT_LOCALE } = Astro.props;
+const { title, description, locale = DEFAULT_LOCALE, themeColor = '#0a1533' } = Astro.props;
 const t = createTranslator(common, locale);
-const pageTitle = title ? `${title} · ${site.name}` : `${site.name} — ${t('site.tagline')}`;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
 ---
 
 <!doctype html>
 <html lang={locale}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{pageTitle}</title>
-    {description && <meta name="description" content={description} />}
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content={themeColor} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+    <slot name="head" />
   </head>
-  <body class="min-h-dvh flex flex-col">
-    <main class="flex-1 mx-auto w-full max-w-3xl px-4 py-10">
-      <slot />
-    </main>
-    <footer class="mx-auto w-full max-w-3xl px-4 py-6 text-sm text-ink-muted">
-      <p class="font-medium">{t('footer.credits')}</p>
-      <ul>
-        {
-          attributions.map((a) => (
-            <li>
-              <a class="underline" href={a.href} rel="noopener">
-                {a.text}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-      <p class="mt-2">{t('footer.nonCommercial')}</p>
+  <body class="flex min-h-dvh flex-col">
+    <a
+      href="#main"
+      class="sr-only z-50 rounded-full bg-ink px-4 py-2 text-paper focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+      >{t('a11y.skip')}</a
+    >
+    <slot />
+    <footer class="mt-auto border-t border-line">
+      <div class="mx-auto grid max-w-5xl gap-6 px-4 py-10 text-sm text-ink-muted sm:grid-cols-[1.4fr_1fr] sm:px-6">
+        <div>
+          <p class="font-display text-lg font-semibold text-ink">{site.name}</p>
+          <p class="mt-1 max-w-md">{t('footer.about')}</p>
+          <p class="mt-3">{t('footer.nonCommercial')}</p>
+          <p class="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+            <a class="font-medium text-ink underline" href="/about">{t('footer.methodology')}</a>
+            <a class="font-medium text-ink underline" href="/api/conditions.json">{t('footer.api')}</a>
+          </p>
+        </div>
+        <div>
+          <p class="font-medium text-ink">{t('footer.credits')}</p>
+          <ul class="mt-1 space-y-1">
+            {
+              attributions.map((a) => (
+                <li>
+                  <a class="underline" href={a.href} rel="noopener">
+                    {a.text}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+          <p class="mt-3">{t('footer.disclaimer')}</p>
+          <p class="mt-3">{t('footer.madeIn')}</p>
+        </div>
+      </div>
     </footer>
   </body>
 </html>

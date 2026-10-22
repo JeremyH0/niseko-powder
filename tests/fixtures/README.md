@@ -1,8 +1,8 @@
 # Test fixtures
 
 Real responses saved by `npm run probe` (`scripts/probe-data.ts`). Tests read these files;
-they never hit the network. Re-run the probe to refresh them (it overwrites files with the
-same name and adds new dated JMA files; delete stale ones by hand if a test doesn't use them).
+they never hit the network. The probe **never overwrites** an existing file (tests depend on
+exact contents): delete a file to refresh it, and expect to update the matching test.
 
 ## jma/ — JMA AMeDAS, station 16217 倶知安 (Kutchan)
 | File | What |
@@ -22,6 +22,7 @@ November) and keep that file too.
 | `forecast-summit.json` | 7-day forecast, summit only, default model (`best_match`). Single object. |
 | `forecast-all-points.json` | Summit + mid + base in one request. **Array** of 3, same order as requested. |
 | `forecast-all-points-jma_seamless.json` | Same with `models=jma_seamless` (JMA MSM 5 km + GSM). |
+| `production-primary.json` / `production-extras.json` | Exactly the two requests the `open-meteo` provider makes (jma_seamless + best_match extras, `past_days=1`). Captured at the time in `production-captured-at.txt`. |
 | `historical-summit-2026-02-12.json` | Archived forecast for 12–18 Feb 2026 (two ~11 cm days) — winter data for powder-score tests. |
 
 Units as requested: wind in m/s, snowfall in **cm**, but `snow_depth` comes back in **metres**.

@@ -1,0 +1,22 @@
+---
+/** A labelled number. The value is real text (screen readers, crawlers, no-JS). */
+interface Props {
+  label: string;
+  value: string;
+  unit?: string;
+  note?: string;
+  muted?: boolean;
+  class?: string;
+}
+const { label, value, unit, note, muted = false, class: className } = Astro.props;
+---
+
+<div class:list={['rounded-2xl border border-line bg-card p-4', className]}>
+  <dt class="text-xs font-medium uppercase tracking-wider text-ink-muted">{label}</dt>
+  <dd class="mt-1">
+    <span class:list={['num font-display text-3xl font-semibold', muted && 'text-ink-muted']}>{value}</span>
+    {unit && <span class="ml-0.5 text-sm font-medium text-ink-muted">{unit}</span>}
+    <slot />
+  </dd>
+  {note && <dd class="mt-1 text-xs text-ink-muted">{note}</dd>}
+</div>

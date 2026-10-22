@@ -28,34 +28,37 @@ so the site is indexed and ready when people start searching.
 - [x] Propose 5 brand names + domains to check (see BRIEF → Branding).
 
 ## Phase 1 — Data pipeline (no UI yet)
-- [ ] Provider interface + `jma-amedas` provider: picks the right 3-hour file(s) in JST, finds the
+- [x] Provider interface + `jma-amedas` provider: picks the right 3-hour file(s) in JST, finds the
       latest valid row, maps `[value, flag]` pairs to `Reading<T>`, handles `null`, unknown flags,
       missing files, and JMA being down.
-- [ ] `open-meteo` provider for summit / mid / base points with `timezone=Asia/Tokyo`.
-- [ ] Powder score module with thresholds in `src/config/powder.ts` + tests for edge cases
+- [x] `open-meteo` provider for summit / mid / base points with `timezone=Asia/Tokyo`.
+- [x] Powder score module with thresholds in `src/config/powder.ts` + tests for edge cases
       (no snow season, stale data, huge dump, rain at base, strong wind).
-- [ ] Job registry + scheduled handler: run all jobs, write normalized `Conditions` JSON to KV,
+- [x] Job registry + scheduled handler: run all jobs, write normalized `Conditions` JSON to KV,
       keep the previous good value if a source fails (never overwrite good data with an error).
-- [ ] `GET /api/conditions.json` served from KV with sensible cache headers.
-- [ ] Unit tests passing against fixtures. Explain how to trigger the cron locally
+- [x] `GET /api/conditions.json` served from KV with sensible cache headers.
+- [x] Unit tests passing against fixtures. Explain how to trigger the cron locally
       (`wrangler dev` with scheduled testing) and what output to expect.
 
 ## Phase 2 — Homepage MVP (function first, plain styling)
-- [ ] `/` server-renders the verdict, key "right now" numbers, 7-day mountain forecast, last-updated
+- [x] `/` server-renders the verdict, key "right now" numbers, 7-day mountain forecast, last-updated
       time (JST), stale-data banner, attribution footer. Works with JavaScript off.
-- [ ] Clear labels: "Kutchan town · 176 m" vs "Mountain forecast · ~1,300 m".
-- [ ] Links section (official lift status, webcams, avalanche info, roads) from config.
-- [ ] `/about` methodology page (sources, powder score explained, caveats, credits).
-- [ ] First deploy to a free `*.workers.dev` URL. Report the URL and how to redeploy.
+- [x] Clear labels: "Kutchan town · 176 m" vs "Mountain forecast · ~1,300 m".
+- [x] Links section (official lift status, webcams, avalanche info, roads) from config.
+- [x] `/about` methodology page (sources, powder score explained, caveats, credits).
+- [x] First deploy to a free `*.workers.dev` URL. Report the URL and how to redeploy.
 
 ## Phase 3 — Art direction & motion (the portfolio moment)
 - [ ] Propose 2 short art-direction options (type pairing, palette, mood) before building; wait
-      for Jeremy to choose.
-- [ ] Snowfall canvas driven by live data (intensity, flake size, wind drift); paused off-screen;
+      for Jeremy to choose. *(Jeremy asked for "very visual and fun" straight away, so one
+      direction — "snow globe" — was built first; an alternative can still be proposed.)*
+- [x] Snowfall canvas driven by live data (intensity, flake size, wind drift); paused off-screen;
       disabled with `prefers-reduced-motion`.
-- [ ] Palette shifts with conditions and time of day (JST).
-- [ ] GSAP entrance animations, hand-built SVG forecast chart, tabular numbers.
-- [ ] Performance & accessibility pass: Lighthouse mobile ≥ 95 in all four categories, AA contrast,
+- [x] Palette shifts with conditions and time of day (JST).
+- [x] Entrance animations, hand-built SVG forecast chart, tabular numbers. *(Done in pure CSS —
+      zero JS cost; GSAP not needed yet. Add it when a richer timeline is wanted.)*
+- [ ] Performance & accessibility pass *(AA tokens, skip link, labels, reduced motion, no-JS done;
+      full Lighthouse audit still to run)*: Lighthouse mobile ≥ 95 in all four categories, AA contrast,
       keyboard navigation, screen-reader labels for every number.
 
 ## Phase 4 — Season tracker

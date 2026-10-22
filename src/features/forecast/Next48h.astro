@@ -1,0 +1,152 @@
+---
+import { createTranslator, DEFAULT_LOCALE, type Locale } from '../../i18n/index.ts';
+import type { Conditions } from '../../lib/data/types.ts';
+import { formatClock, formatTemp, formatWeekday } from '../../lib/format.ts';
+import Section from '../../ui/Section.astro';
+import { CHART, next48Model } from './chart.ts';
+import { forecastStrings } from './strings.ts';
+
+interface Props {
+  conditions: Conditions | null;
+  now: Date;
+  locale?: Locale;
+}
+const { conditions, now, locale = DEFAULT_LOCALE } = Astro.props;
+const t = createTranslator(forecastStrings, locale);
+const m = next48Model(conditions, now);
+
+const when = (iso: string) => t('h48.when', { day: formatWeekday(iso), time: formatClock(iso) });
+const summary = m
+  ? [
+      m.peak && m.totalSnowCm >= 0.5
+        ? t('h48.summary.snow', { cm: Math.round(m.totalSnowCm), when: when(m.peak.time) })
+        : t('h48.summary.none'),
+      m.totalRainMm >= 1 ? t('h48.summary.rain', { mm: Math.round(m.totalRainMm) }) : '',
+    ]
+      .filter(Boolean)
+      .join(' ')
+  : '';
+const { width, height, baseline, rainBottom, labelY, snowTop } = CHART;
+---
+
+{
+  m && (
+    <Section id="next-48h" title={t('h48.title')} badge={t('h48.badge')}>
+      <div class="rounded-3xl border border-line bg-card p-4 sm:p-6">
+        <p id="next-48h-summary" class="text-lg leading-snug">
+          {summary}
+        </p>
+
+        <div class="-mx-4 mt-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          <svg
+            viewBox={`0 0 ${width} ${height}`}
+            class="block w-full min-w-[640px]"
+            role="img"
+            aria-labelledby="next-48h-summary"
+          >
+            {m.nightBands.map((b) => (
+              <rect x={b.x} y={snowTop - 10} width={b.w} height={rainBottom - snowTop + 10} fill="currentColor" opacity="0.05" />
+            ))}
+            <line x1="0" x2={width} y1={baseline} y2={baseline} stroke="currentColor" opacity="0.25" />
+            {m.bars.map((b, i) => (
+              <g>
+                {b.snowH > 0 && (
+                  <rect
+                    class="grow-y"
+                    style={`--i:${i}`}
+                    x={b.x}
+                    y={baseline - b.snowH}
+                    width={b.w}
+                    height={b.snowH}
+                    rx="2"
+                    fill="var(--snow)"
+                  />
+                )}
+                {b.rainH > 0 && <rect x={b.x} y={baseline + 3} width={b.w} height={b.rainH} rx="2" fill="var(--rain)" opacity="0.85" />}
+              </g>
+            ))}
+            {m.zeroY !== null && (
+              <g>
+                <line x1="0" x2={width} y1={m.zeroY} y2={m.zeroY} stroke="currentColor" stroke-dasharray="4 5" opacity="0.4" />
+                <text x={width - 4} y={m.zeroY - 5} text-anchor="end" font-size="12" fill="currentColor" opacity="0.7">
+                  0°
+                </text>
+              </g>
+            )}
+            {m.tempPath && <path d={m.tempPath} fill="none" stroke="currentColor" stroke-width="2" opacity="0.75" stroke-linejoin="round" />}
+            {m.tempLabels.map((l) => (
+              <text x={l.x} y={l.y - 8} text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">
+                {formatTemp(l.text)}
+              </text>
+            ))}
+            {m.ticks.map((tk) => (
+              <g>
+                <line x1={tk.x} x2={tk.x} y1={rainBottom} y2={rainBottom + 6} stroke="currentColor" opacity="0.4" />
+                <text
+                  x={tk.x}
+                  y={labelY}
+                  font-size="13"
+                  fill="currentColor"
+                  font-weight={tk.isMidnight ? '700' : '400'}
+                  opacity={tk.isMidnight ? '1' : '0.7'}
+                >
+                  {tk.isMidnight ? formatWeekday(tk.time) : `${String(tk.hour).padStart(2, '0')}:00`}
+                </text>
+              </g>
+            ))}
+          </svg>
+        </div>
+
+        <ul class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-muted">
+          <li class="flex items-center gap-2">
+            <span class="inline-block h-3 w-3 rounded-sm bg-snow" />
+            {t('h48.legend.snow')}
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="inline-block h-3 w-3 rounded-sm bg-rain" />
+            {t('h48.legend.rain')}
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="inline-block h-0.5 w-4 bg-ink-muted" />
+            {t('h48.legend.temp')}
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="inline-block h-3 w-3 rounded-sm bg-ink/10" />
+            {t('h48.legend.night')}
+          </li>
+        </ul>
+
+        <details class="mt-4 text-sm">
+          <summary class="cursor-pointer font-medium text-snow">{t('h48.table')}</summary>
+          <div class="mt-3 max-h-80 overflow-auto">
+            <table class="w-full text-left">
+              <thead class="sticky top-0 bg-card text-ink-muted">
+                <tr>
+                  <th class="py-1 pr-3 font-medium">{t('h48.col.time')}</th>
+                  <th class="py-1 pr-3 font-medium">{t('h48.col.snow')}</th>
+                  <th class="py-1 pr-3 font-medium">{t('h48.col.rain')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {m.bars
+                  .filter((_, i) => i % 3 === 0)
+                  .map((b, idx) => {
+                    const slice = m.bars.slice(idx * 3, idx * 3 + 3);
+                    return (
+                      <tr class="border-t border-line">
+                        <td class="py-1 pr-3">
+                          {formatWeekday(b.time)} {formatClock(b.time)}
+                        </td>
+                        <td class="py-1 pr-3">{slice.reduce((a, x) => a + x.snowCm, 0).toFixed(1)}</td>
+                        <td class="py-1 pr-3">{slice.reduce((a, x) => a + x.rainMm, 0).toFixed(1)}</td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </Section>
+  )
+}

@@ -1,0 +1,50 @@
+---
+/** Native share sheet (or copy link) — the "send it to the group chat" morning habit. */
+import { createTranslator, DEFAULT_LOCALE, type Locale } from '../../i18n/index.ts';
+import Icon from '../../ui/Icon.astro';
+import { shareStrings } from './strings.ts';
+
+interface Props {
+  /** The verdict word and headline, already translated. */
+  word: string;
+  headline: string;
+  url: string;
+  locale?: Locale;
+}
+const { word, headline, url, locale = DEFAULT_LOCALE } = Astro.props;
+const t = createTranslator(shareStrings, locale);
+---
+
+<div class="flex flex-col items-center gap-3 text-center">
+  <button
+    type="button"
+    data-share
+    data-text={t('text', { word, headline })}
+    data-url={url}
+    data-copied={t('copied')}
+    class="js-only inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 font-semibold text-paper shadow-lg shadow-ink/10 transition hover:-translate-y-0.5"
+  >
+    <Icon name="share" size={18} />
+    {t('button')}
+  </button>
+  <p data-share-status role="status" class="min-h-5 text-sm font-medium text-good"></p>
+  <p class="max-w-md text-sm text-ink-muted">{t('habit')}</p>
+</div>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>('[data-share]');
+  const status = document.querySelector<HTMLElement>('[data-share-status]');
+  button?.addEventListener('click', async () => {
+    const { text = '', url = location.href, copied = '' } = button.dataset;
+    try {
+      if (navigator.share) {
+        await navigator.share({ text, url });
+        return;
+      }
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      if (status) status.textContent = copied;
+    } catch {
+      // Share sheet dismissed — nothing to do.
+    }
+  });
+</script>

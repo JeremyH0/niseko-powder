@@ -1,0 +1,26 @@
+---
+/** A page section with a display heading and an optional "where is this measured" badge. */
+interface Props {
+  id: string;
+  title: string;
+  badge?: string;
+  intro?: string;
+  class?: string;
+}
+const { id, title, badge, intro, class: className } = Astro.props;
+---
+
+<section id={id} aria-labelledby={`${id}-title`} class:list={['min-w-0 scroll-mt-6', className]}>
+  <div class="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+    <h2 id={`${id}-title`} class="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h2>
+    {
+      badge && (
+        <span class="rounded-full border border-line bg-card px-2.5 py-0.5 text-xs font-medium text-ink-muted">
+          {badge}
+        </span>
+      )
+    }
+  </div>
+  {intro && <p class="-mt-2 mb-4 max-w-prose text-sm text-ink-muted">{intro}</p>}
+  <slot />
+</section>

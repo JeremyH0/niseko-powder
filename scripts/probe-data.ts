@@ -1,17 +1,21 @@
 /**
  * Fetch real responses from every data source and save them as test fixtures.
  * Also prints a short report of anything that differs from docs/DATA_SOURCES.md.
+ * Existing fixture files are never overwritten (tests depend on them); new dated JMA
+ * files are added as time passes.
  *
  *   npm run probe
  *
  * Runs with plain Node (>= 22.18 strips TypeScript types natively). Polite by design:
  * a handful of requests per run. Don't put this in a loop.
  */
+import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getLocation, type ForecastPoint } from '../src/config/locations.ts';
 import { site } from '../src/config/site.ts';
+import { extrasUrl, primaryUrl } from '../src/lib/data/providers/open-meteo.ts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = join(ROOT, 'tests', 'fixtures');
@@ -29,8 +33,13 @@ async function get(url: string): Promise<Response> {
   return res;
 }
 
+/** Never overwrites: tests depend on exact fixture contents. Delete a file to refresh it. */
 async function save(relPath: string, body: string): Promise<void> {
   const path = join(FIXTURES, relPath);
+  if (existsSync(path)) {
+    console.log(`  kept existing tests/fixtures/${relPath} (delete it to refresh)`);
+    return;
+  }
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, body.endsWith('\n') ? body : `${body}\n`);
   console.log(`  saved tests/fixtures/${relPath}`);
@@ -197,7 +206,21 @@ async function probeOpenMeteo(): Promise<void> {
     jmaBody.forEach((b, i) => checkVariables(`jma_seamless ${location.forecastPoints[i]?.id ?? `#${i}`}`, b as Record<string, unknown>));
   }
 
-  // 4) A real past snowstorm, so Phase 1 can test the powder score on winter data
+  // 4) Exactly what production requests (src/lib/data/providers/open-meteo.ts) — the
+  //    provider tests replay these.
+  const query = { points: location.forecastPoints, timezone: location.timezone };
+  for (const [name, target] of [
+    ['production-primary', primaryUrl(query)],
+    ['production-extras', extrasUrl(query)],
+  ] as const) {
+    const res = await get(target);
+    const body = await res.text();
+    if (res.ok) await save(`open-meteo/${name}.json`, pretty(JSON.parse(body)));
+    else notes.push(`Production request ${name} failed: ${body}`);
+  }
+  await save('open-meteo/production-captured-at.txt', new Date().toISOString());
+
+  // 5) A real past snowstorm, so Phase 1 can test the powder score on winter data
   //    while it's still October. Historical Forecast API = archived model runs.
   const winter = await get(
     forecastUrl(OPEN_METEO_HISTORICAL, [summit], { start_date: '2026-02-12', end_date: '2026-02-18' }),

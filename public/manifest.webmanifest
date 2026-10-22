@@ -1,0 +1,14 @@
+{
+  "name": "Niseko Powder — Is it a powder day?",
+  "short_name": "Powder?",
+  "description": "Is it a powder day in Niseko? Live snow, a 7-day mountain forecast and an honest powder score.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a1533",
+  "theme_color": "#0a1533",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
