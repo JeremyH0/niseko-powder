@@ -263,11 +263,11 @@
     translate: 0 18px;
   }
 }
+/* No opacity here on purpose: the verdict is the LCP element and must paint at once. */
 @keyframes settle {
   from {
     letter-spacing: 0.06em;
-    filter: blur(10px);
-    opacity: 0;
+    filter: blur(8px);
   }
 }
 @keyframes grow-y {
