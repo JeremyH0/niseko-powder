@@ -35,6 +35,19 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- Respect the OS text size (Dynamic Type etc.); everything is sized in rem. -->
+    <meta name="text-scale" content="scale" />
+    <!-- Instant navigation: prerender our own pages when the visitor shows intent (hover / touch start). -->
+    <script type="speculationrules" is:inline>
+      {
+        "prerender": [
+          {
+            "where": { "and": [{ "href_matches": "/*" }, { "not": { "href_matches": "/api/*" } }] },
+            "eagerness": "moderate"
+          }
+        ]
+      }
+    </script>
     <script is:inline>
       document.documentElement.classList.add('js');
     </script>
@@ -43,7 +56,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
   <body class="flex min-h-dvh flex-col">
     <a
       href="#main"
-      class="sr-only z-50 rounded-full bg-ink px-4 py-2 text-paper focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+      class="sr-only z-50 rounded-full bg-ink px-5 py-3 text-paper focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
       >{t('a11y.skip')}</a
     >
     <slot />
@@ -54,18 +67,18 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
           <p class="mt-1 max-w-md">{t('footer.about')}</p>
           <p class="mt-3">{t('footer.nonCommercial')}</p>
           <p class="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-            <a class="font-medium text-ink underline" href="/season">{t('footer.season')}</a>
-            <a class="font-medium text-ink underline" href="/about">{t('footer.methodology')}</a>
-            <a class="font-medium text-ink underline" href="/api/conditions.json">{t('footer.api')}</a>
+            <a class="tap font-medium text-ink underline" href="/season">{t('footer.season')}</a>
+            <a class="tap font-medium text-ink underline" href="/about">{t('footer.methodology')}</a>
+            <a class="tap font-medium text-ink underline" href="/api/conditions.json">{t('footer.api')}</a>
           </p>
         </div>
         <div>
           <p class="font-medium text-ink">{t('footer.credits')}</p>
-          <ul class="mt-1 space-y-1">
+          <ul class="mt-1">
             {
               attributions.map((a) => (
                 <li>
-                  <a class="underline" href={a.href} rel="noopener">
+                  <a class="tap underline" href={a.href} rel="noopener">
                     {a.text}
                   </a>
                 </li>

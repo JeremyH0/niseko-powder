@@ -103,6 +103,12 @@ Key properties:
 - Client JavaScript is small and optional: snowfall canvas, chart read-outs, share button.
   Animations are CSS (entrance, scroll reveals via `animation-timeline: view()`, cross-document
   view transitions) and only run under `prefers-reduced-motion: no-preference`.
+- Responsive strategy: mobile-first; components size themselves from their **container**
+  (`.cq` + `@container`: season card, even tile/link grids) rather than the viewport. Pages use a
+  12-column bento grid from `lg` (48 h + "right now" rail, 7-day + season, links); the hero splits
+  (verdict | today panel) from `xl`. Touch targets ≥ 44px (`tap` utility). A sticky "today" bar
+  appears after the hero. Speculation Rules prerender internal pages on hover/touch (Chromium;
+  ignored elsewhere). `<meta name="text-scale">` + rem-based type respect OS text size.
 - Charts follow the dataviz rules: one axis per panel (small multiples, never dual-axis), ≤ 24px
   bars with a 4px rounded data-end, solid hairline grids, legend + selective direct labels,
   hover/keyboard tooltip, and a table view. Series colours validated for colour blindness.

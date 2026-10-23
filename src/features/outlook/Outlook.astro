@@ -41,11 +41,12 @@ const wet = obs?.precip1hMm.ok && (obs.precip1hMm.value ?? 0) > 0;
 const townNote = wet ? ((townTemp ?? 0) > 1 ? t('town.note.rain') : t('town.note.snow')) : t('town.note.dry');
 ---
 
-<section aria-label={t('title')} class="relative z-20 mx-auto -mt-12 w-full max-w-6xl px-4 sm:-mt-20 sm:px-6">
+<section aria-label={t('title')} class="relative z-20 mx-auto -mt-12 w-full max-w-7xl px-4 sm:-mt-20 sm:px-6 lg:px-8">
   <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4">
     <StatTile class="rise" label={t('fresh.label')} value={formatCm(p?.freshCm)} unit="cm" note={freshNote} />
     <StatTile class="rise" label={t('next24.label')} value={formatCm(p?.next24hCm)} unit="cm" note={t('next24.note')} />
     <StatTile class="rise" label={t('big.label')} value={bigValue} note={bigNote} muted={!big} />
     <StatTile class="rise" label={t('town.label')} value={formatTemp(townTemp)} note={townNote} />
   </dl>
+  <p class="mt-4 text-center text-sm text-ink-muted">{t('habit')}</p>
 </section>

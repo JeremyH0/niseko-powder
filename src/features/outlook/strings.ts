@@ -3,6 +3,7 @@ import { defineMessages } from '../../i18n/index.ts';
 export const outlookStrings = defineMessages({
   en: {
     title: 'At a glance',
+    habit: 'Updated every hour from JMA and the mountain forecast — bookmark it for your morning check.',
     'fresh.label': 'Fresh · last 24 h',
     'fresh.town': 'Measured in Kutchan',
     'fresh.mountain': 'Mountain model · summit {summit} cm',

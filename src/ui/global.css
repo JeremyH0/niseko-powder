@@ -102,6 +102,15 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+  /* Balanced headings, no orphans in paragraphs (applied deliberately, not on *). */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
   :focus-visible {
     outline: 3px solid var(--snow);
     outline-offset: 3px;
@@ -392,4 +401,84 @@
 /* Things that need JavaScript stay hidden until it runs. */
 html:not(.js) .js-only {
   display: none !important;
+}
+
+/* ---------------------------------------------------------------- Sticky "today" bar
+ * Appears once the hero has scrolled away (IntersectionObserver toggles .is-visible), so the
+ * answer is always one glance away while you read the forecast. Hidden = not focusable.
+ */
+.today-bar {
+  visibility: hidden;
+  opacity: 0;
+  translate: 0 -100%;
+}
+.today-bar.is-visible {
+  visibility: visible;
+  opacity: 1;
+  translate: 0 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .today-bar {
+    transition:
+      opacity 0.25s ease,
+      translate 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+      visibility 0.35s allow-discrete;
+  }
+}
+
+/* ---------------------------------------------------------------- Container-aware cards */
+.cq {
+  container-type: inline-size;
+}
+.season-card {
+  display: grid;
+  gap: 1rem;
+  align-items: center;
+}
+@container (min-width: 34rem) {
+  .season-card {
+    grid-template-columns: 1fr 1.2fr;
+    gap: 1.5rem;
+  }
+}
+
+/* Comfortable touch targets for inline text links and disclosures (WCAG 2.5.8 + platform 44px).
+   A Tailwind utility (not plain CSS) so responsive helpers like `hidden md:inline-flex` still win. */
+@utility tap {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+}
+
+/* Even grids, decided by the card's own width (no orphans at any breakpoint). */
+.tiles-5 {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.tiles-5 > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+@container (min-width: 44rem) {
+  .tiles-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .tiles-5 > :last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+}
+.links-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+@container (min-width: 34rem) {
+  .links-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container (min-width: 60rem) {
+  .links-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }

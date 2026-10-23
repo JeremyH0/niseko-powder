@@ -48,6 +48,8 @@ Living list. Add ideas freely; build them one at a time with the "Add a feature"
 _(none yet)_
 
 ## Shipped
+- 2026-10-23 — **Responsive pass**: desktop bento dashboard, split hero (xl), sticky today bar,
+  container-query grids (no orphans on tablet), 44px touch targets, prerender on intent, OS text scale.
 - 2026-10-23 — **Redesign "Niseko night powder"**: frosted verdict, powder stake (ankle / boot /
   knee), real sunrise/sunset-driven sky, stars and valley fog, depth-layered snowfall with gusts,
   glass UI, scroll reveals + page transitions, charts rebuilt to dataviz rules with hover/keyboard

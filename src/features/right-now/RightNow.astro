@@ -38,7 +38,7 @@ const dir = v(obs?.windDirDeg);
   {
     obs ? (
       <>
-        <dl class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <dl class="tiles-5">
           <StatTile
             label={t('depth.label')}
             value={snowMeasured ? formatCm(v(obs.snowDepthCm)) : '—'}

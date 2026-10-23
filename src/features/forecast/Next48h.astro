@@ -57,7 +57,7 @@ const panelTitle = 'font-size:12px;font-weight:600;fill:currentColor';
             bottom={temp.top + temp.h}
             label={t('h48.title')}
             hint={t('chart.hint')}
-            class="min-w-[640px]"
+            class="min-w-[560px]"
           >
             <svg viewBox={`0 0 ${width} ${height}`} class="block w-full text-ink-muted" aria-hidden="true">
               {m.nightBands.map((b) => (
@@ -157,7 +157,7 @@ const panelTitle = 'font-size:12px;font-weight:600;fill:currentColor';
         </ul>
 
         <details class="mt-4 text-sm">
-          <summary class="cursor-pointer font-medium text-accent">{t('h48.table')}</summary>
+          <summary class="tap cursor-pointer font-medium text-accent">{t('h48.table')}</summary>
           <div class="mt-3 max-h-80 overflow-auto">
             <table class="w-full text-left">
               <thead class="sticky top-0 bg-card-solid text-ink-muted">
