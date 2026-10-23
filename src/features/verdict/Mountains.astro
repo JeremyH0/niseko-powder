@@ -1,7 +1,8 @@
 ---
 /**
- * Annupuri (left) and Yōtei (right) as layered ridges. Snowcaps appear when the summit
- * has snow. The near ridge is painted in the page colour so the hero melts into the content.
+ * Yōtei (right) and the Annupuri range (left) as layered ridges with drifting valley fog.
+ * Snowcaps appear when the summit has snow. The near ridge is painted in the page colour
+ * so the hero melts into the content below.
  */
 interface Props {
   snowcap: boolean;
@@ -12,18 +13,35 @@ const { snowcap, annupuriLabel, yoteiLabel } = Astro.props;
 ---
 
 <div class="pointer-events-none absolute inset-x-0 bottom-0" aria-hidden="true">
-  <svg viewBox="0 0 1200 300" preserveAspectRatio="xMidYMax slice" class="block h-[clamp(150px,25vw,360px)] w-full">
+  <svg viewBox="0 0 1200 300" preserveAspectRatio="xMidYMax slice" class="block h-[clamp(170px,26vw,380px)] w-full">
+    <defs>
+      <linearGradient id="fog" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--fog)" stop-opacity="0"></stop>
+        <stop offset="0.6" stop-color="var(--fog)"></stop>
+        <stop offset="1" stop-color="var(--fog)" stop-opacity="0"></stop>
+      </linearGradient>
+      <linearGradient id="far" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--ridge-far)"></stop>
+        <stop offset="1" stop-color="var(--ridge-far)" stop-opacity="0.55"></stop>
+      </linearGradient>
+    </defs>
     <!-- Yōtei: the near-perfect volcanic cone across the valley -->
-    <path d="M640 300 C760 250 850 120 905 78 Q930 64 955 78 C1010 120 1100 250 1220 300 Z" fill="var(--ridge-far)"></path>
+    <path d="M640 300 C760 250 850 120 905 78 Q930 64 955 78 C1010 120 1100 250 1220 300 Z" fill="url(#far)"></path>
     {
       snowcap && (
         <path
           d="M862 116 C880 98 894 86 905 78 Q930 64 955 78 C966 86 980 98 998 116 L980 123 L962 109 L947 126 L930 107 L913 127 L897 111 L880 124 Z"
           fill="var(--cap)"
-          opacity="0.92"
+          opacity="0.9"
         />
       )
     }
+    <text x="944" y="50" text-anchor="end" font-size="20" fill="#fff" opacity="0.72" font-family="system-ui, sans-serif">{yoteiLabel}</text>
+
+    <!-- Labels are anchored inward so phones (which crop the sides) never cut them. -->
+    <!-- Valley fog between the volcano and the range -->
+    <rect class="fog" x="-60" y="150" width="1320" height="90" fill="url(#fog)"></rect>
+
     <!-- Niseko Annupuri range -->
     <path
       d="M-20 300 L-20 190 C60 172 120 142 190 122 C232 109 262 96 300 92 C332 89 352 100 382 113 C430 132 474 122 522 142 C580 166 640 200 700 230 C760 256 820 280 900 300 Z"
@@ -36,12 +54,11 @@ const { snowcap, annupuriLabel, yoteiLabel } = Astro.props;
         />
       )
     }
-    <text x="300" y="76" text-anchor="middle" font-size="21" fill="#fff" opacity="0.75" font-family="system-ui, sans-serif"
-      >{annupuriLabel}</text
-    >
-    <text x="930" y="52" text-anchor="middle" font-size="21" fill="#fff" opacity="0.7" font-family="system-ui, sans-serif"
-      >{yoteiLabel}</text
-    >
+    <text x="262" y="74" text-anchor="start" font-size="20" fill="#fff" opacity="0.75" font-family="system-ui, sans-serif">{annupuriLabel}</text>
+
+    <!-- Low fog over the near ridge -->
+    <rect class="fog" style="animation-delay:-9s" x="-60" y="215" width="1320" height="60" fill="url(#fog)" opacity="0.8"></rect>
+
     <!-- Near ridge in the page colour -->
     <path
       d="M-20 300 L-20 252 C120 232 260 264 420 250 C580 238 700 264 860 257 C1000 251 1100 267 1220 254 L1220 300 Z"

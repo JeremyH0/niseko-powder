@@ -2,8 +2,9 @@
 import { createTranslator, DEFAULT_LOCALE, type Locale } from '../../i18n/index.ts';
 import type { Conditions } from '../../lib/data/types.ts';
 import { formatClock, formatTemp, formatWeekday } from '../../lib/format.ts';
+import ChartFrame, { type ChartRow } from '../../ui/ChartFrame.astro';
 import Section from '../../ui/Section.astro';
-import { CHART, next48Model } from './chart.ts';
+import { H48, next48Model } from './chart.ts';
 import { forecastStrings } from './strings.ts';
 
 interface Props {
@@ -26,122 +27,158 @@ const summary = m
       .filter(Boolean)
       .join(' ')
   : '';
-const { width, height, baseline, rainBottom, labelY, snowTop } = CHART;
+const { width, height, left, right, snow, rain, temp, axisY } = H48;
+const plotRight = width - right;
+const rows: ChartRow[] = (m?.hours ?? []).map((h) => ({
+  t: `${formatWeekday(h.time)} ${formatClock(h.time)}`,
+  r: [
+    ['var(--snow)', `${h.snowCm.toFixed(1)} cm`, t('h48.tip.snow')],
+    ['var(--rain)', `${h.rainMm.toFixed(1)} mm`, t('h48.tip.rain')],
+    ['var(--neutral-series-2)', formatTemp(h.tempC), t('h48.tip.temp')],
+  ],
+}));
+const panelTitle = 'font-size:12px;font-weight:600;fill:currentColor';
 ---
 
 {
   m && (
-    <Section id="next-48h" title={t('h48.title')} badge={t('h48.badge')}>
-      <div class="rounded-3xl border border-line bg-card p-4 sm:p-6">
-        <p id="next-48h-summary" class="text-lg leading-snug">
+    <Section id="next-48h" title={t('h48.title')} badge={t('h48.badge')} eyebrow="01">
+      <div class="glass reveal rounded-3xl p-4 sm:p-6">
+        <p id="next-48h-summary" class="max-w-2xl text-lg leading-snug text-pretty">
           {summary}
         </p>
 
-        <div class="-mx-4 mt-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-          <svg
-            viewBox={`0 0 ${width} ${height}`}
-            class="block w-full min-w-[640px]"
-            role="img"
-            aria-labelledby="next-48h-summary"
+        <div class="-mx-4 mt-5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+          <ChartFrame
+            xs={m.hours.map((h) => h.cx)}
+            rows={rows}
+            viewBoxWidth={width}
+            top={snow.top - 6}
+            bottom={temp.top + temp.h}
+            label={t('h48.title')}
+            hint={t('chart.hint')}
+            class="min-w-[640px]"
           >
-            {m.nightBands.map((b) => (
-              <rect x={b.x} y={snowTop - 10} width={b.w} height={rainBottom - snowTop + 10} fill="currentColor" opacity="0.05" />
-            ))}
-            <line x1="0" x2={width} y1={baseline} y2={baseline} stroke="currentColor" opacity="0.25" />
-            {m.bars.map((b, i) => (
-              <g>
-                {b.snowH > 0 && (
-                  <rect
-                    class="grow-y"
-                    style={`--i:${i}`}
-                    x={b.x}
-                    y={baseline - b.snowH}
-                    width={b.w}
-                    height={b.snowH}
-                    rx="2"
-                    fill="var(--snow)"
-                  />
-                )}
-                {b.rainH > 0 && <rect x={b.x} y={baseline + 3} width={b.w} height={b.rainH} rx="2" fill="var(--rain)" opacity="0.85" />}
-              </g>
-            ))}
-            {m.zeroY !== null && (
-              <g>
-                <line x1="0" x2={width} y1={m.zeroY} y2={m.zeroY} stroke="currentColor" stroke-dasharray="4 5" opacity="0.4" />
-                <text x={width - 4} y={m.zeroY - 5} text-anchor="end" font-size="12" fill="currentColor" opacity="0.7">
-                  0°
-                </text>
-              </g>
-            )}
-            {m.tempPath && <path d={m.tempPath} fill="none" stroke="currentColor" stroke-width="2" opacity="0.75" stroke-linejoin="round" />}
-            {m.tempLabels.map((l) => (
-              <text x={l.x} y={l.y - 8} text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">
-                {formatTemp(l.text)}
+            <svg viewBox={`0 0 ${width} ${height}`} class="block w-full text-ink-muted" aria-hidden="true">
+              {m.nightBands.map((b) => (
+                <rect x={b.x} y={snow.top - 8} width={b.w} height={temp.top + temp.h - snow.top + 8} fill="currentColor" opacity="0.06" />
+              ))}
+
+              {/* Panel 1 — snow at the summit */}
+              <text x={left} y={snow.top - 12} style={panelTitle} class="text-ink">
+                {t('h48.panel.snow')}
               </text>
-            ))}
-            {m.ticks.map((tk) => (
-              <g>
-                <line x1={tk.x} x2={tk.x} y1={rainBottom} y2={rainBottom + 6} stroke="currentColor" opacity="0.4" />
+              <line x1={left} x2={plotRight} y1={snow.top + snow.h} y2={snow.top + snow.h} stroke="var(--grid)" />
+              <line x1={left} x2={plotRight} y1={snow.top} y2={snow.top} stroke="var(--grid)" />
+              <text x={left - 6} y={snow.top + 4} text-anchor="end" font-size="11" fill="currentColor" class="tabular">
+                {m.snowMax}
+              </text>
+              <text x={left - 6} y={snow.top + snow.h + 4} text-anchor="end" font-size="11" fill="currentColor">
+                0
+              </text>
+              {m.hours.map((h, i) => h.snowPath && <path class="grow-y" style={`--i:${i}`} d={h.snowPath} fill="var(--snow)" />)}
+
+              {/* Panel 2 — rain at the base */}
+              <text x={left} y={rain.top - 10} style={panelTitle} class="text-ink">
+                {t('h48.panel.rain')}
+              </text>
+              <line x1={left} x2={plotRight} y1={rain.top + rain.h} y2={rain.top + rain.h} stroke="var(--grid)" />
+              <text x={left - 6} y={rain.top + 4} text-anchor="end" font-size="11" fill="currentColor">
+                {m.rainMax}
+              </text>
+              <text x={left - 6} y={rain.top + rain.h + 4} text-anchor="end" font-size="11" fill="currentColor">
+                0
+              </text>
+              {m.hours.map((h) => h.rainPath && <path d={h.rainPath} fill="var(--rain)" />)}
+
+              {/* Panel 3 — temperature mid-mountain, 0 °C marked */}
+              <text x={left} y={temp.top - 10} style={panelTitle} class="text-ink">
+                {t('h48.panel.temp')}
+              </text>
+              <text x={left - 6} y={temp.top + 4} text-anchor="end" font-size="11" fill="currentColor">
+                {formatTemp(m.tempMax)}
+              </text>
+              <text x={left - 6} y={temp.top + temp.h + 4} text-anchor="end" font-size="11" fill="currentColor">
+                {formatTemp(m.tempMin)}
+              </text>
+              {m.zeroY !== null && (
+                <g>
+                  <line x1={left} x2={plotRight} y1={m.zeroY} y2={m.zeroY} stroke="var(--snow)" stroke-opacity="0.55" />
+                  <text x={plotRight} y={m.zeroY - 4} text-anchor="end" font-size="11" fill="currentColor">
+                    {t('h48.freezing')}
+                  </text>
+                </g>
+              )}
+              <path d={m.tempPath} fill="none" stroke="var(--neutral-series-2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+              {m.tempLabels.map((l) => (
+                <g>
+                  <circle cx={l.x} cy={l.y} r="4" fill="var(--neutral-series-2)" stroke="var(--card-solid)" stroke-width="2" />
+                  <text x={l.x} y={l.below ? l.y + 17 : l.y - 9} text-anchor="middle" font-size="12" font-weight="650" class="fill-ink">
+                    {formatTemp(l.value)}
+                  </text>
+                </g>
+              ))}
+
+              {/* Shared time axis */}
+              {m.ticks.map((tk) => (
                 <text
                   x={tk.x}
-                  y={labelY}
-                  font-size="13"
-                  fill="currentColor"
+                  y={axisY}
+                  text-anchor="middle"
+                  font-size="12"
                   font-weight={tk.isMidnight ? '700' : '400'}
-                  opacity={tk.isMidnight ? '1' : '0.7'}
+                  class={tk.isMidnight ? 'fill-ink' : ''}
+                  fill="currentColor"
                 >
                   {tk.isMidnight ? formatWeekday(tk.time) : `${String(tk.hour).padStart(2, '0')}:00`}
                 </text>
-              </g>
-            ))}
-          </svg>
+              ))}
+            </svg>
+          </ChartFrame>
         </div>
 
-        <ul class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-muted">
+        <ul class="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-ink-muted">
           <li class="flex items-center gap-2">
-            <span class="inline-block h-3 w-3 rounded-sm bg-snow" />
+            <span class="inline-block h-3 w-3 rounded-[3px] bg-snow" />
             {t('h48.legend.snow')}
           </li>
           <li class="flex items-center gap-2">
-            <span class="inline-block h-3 w-3 rounded-sm bg-rain" />
+            <span class="inline-block h-3 w-3 rounded-[3px] bg-rain" />
             {t('h48.legend.rain')}
           </li>
           <li class="flex items-center gap-2">
-            <span class="inline-block h-0.5 w-4 bg-ink-muted" />
+            <span class="inline-block h-0.5 w-4 rounded" style="background:var(--neutral-series-2)" />
             {t('h48.legend.temp')}
           </li>
           <li class="flex items-center gap-2">
-            <span class="inline-block h-3 w-3 rounded-sm bg-ink/10" />
+            <span class="inline-block h-3 w-3 rounded-[3px] bg-ink/10" />
             {t('h48.legend.night')}
           </li>
         </ul>
 
         <details class="mt-4 text-sm">
-          <summary class="cursor-pointer font-medium text-snow">{t('h48.table')}</summary>
+          <summary class="cursor-pointer font-medium text-accent">{t('h48.table')}</summary>
           <div class="mt-3 max-h-80 overflow-auto">
             <table class="w-full text-left">
-              <thead class="sticky top-0 bg-card text-ink-muted">
+              <thead class="sticky top-0 bg-card-solid text-ink-muted">
                 <tr>
                   <th class="py-1 pr-3 font-medium">{t('h48.col.time')}</th>
-                  <th class="py-1 pr-3 font-medium">{t('h48.col.snow')}</th>
-                  <th class="py-1 pr-3 font-medium">{t('h48.col.rain')}</th>
+                  <th class="py-1 pr-3 text-right font-medium">{t('h48.col.snow')}</th>
+                  <th class="py-1 pr-3 text-right font-medium">{t('h48.col.rain')}</th>
+                  <th class="py-1 pr-3 text-right font-medium">{t('h48.col.temp')}</th>
                 </tr>
               </thead>
               <tbody>
-                {m.bars
-                  .filter((_, i) => i % 3 === 0)
-                  .map((b, idx) => {
-                    const slice = m.bars.slice(idx * 3, idx * 3 + 3);
-                    return (
-                      <tr class="border-t border-line">
-                        <td class="py-1 pr-3">
-                          {formatWeekday(b.time)} {formatClock(b.time)}
-                        </td>
-                        <td class="py-1 pr-3">{slice.reduce((a, x) => a + x.snowCm, 0).toFixed(1)}</td>
-                        <td class="py-1 pr-3">{slice.reduce((a, x) => a + x.rainMm, 0).toFixed(1)}</td>
-                      </tr>
-                    );
-                  })}
+                {m.hours.map((h) => (
+                  <tr class="border-t border-line">
+                    <td class="py-1 pr-3">
+                      {formatWeekday(h.time)} {formatClock(h.time)}
+                    </td>
+                    <td class="py-1 pr-3 text-right">{h.snowCm.toFixed(1)}</td>
+                    <td class="py-1 pr-3 text-right">{h.rainMm.toFixed(1)}</td>
+                    <td class="py-1 pr-3 text-right">{formatTemp(h.tempC)}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

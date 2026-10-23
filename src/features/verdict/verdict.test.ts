@@ -52,13 +52,14 @@ function conditions(powder: Partial<PowderResult>, points: ForecastPointData[] =
   };
 }
 
-describe('skyPhase (JST)', () => {
+describe('skyPhase (real sun times, Kutchan; mid-January sunrise ≈ 06:59, sunset ≈ 16:30)', () => {
   it.each([
-    ['2026-01-15T21:30:00Z', 'dawn'], // 06:30
+    ['2026-01-15T21:30:00Z', 'dawn'], // 06:30 JST
     ['2026-01-16T03:00:00Z', 'day'], // 12:00
     ['2026-01-16T07:30:00Z', 'dusk'], // 16:30
     ['2026-01-16T13:00:00Z', 'night'], // 22:00
-  ])('%s → %s', (iso, phase) => expect(skyPhase(new Date(iso))).toBe(phase));
+    ['2026-06-20T20:30:00Z', 'day'], // 05:30 JST in June: sun up since ~03:58
+  ])('%s → %s', (iso, phase) => expect(skyPhase(new Date(iso), 42.9, 140.7567)).toBe(phase));
 });
 
 describe('weatherState', () => {

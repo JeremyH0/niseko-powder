@@ -9,6 +9,8 @@ import { flakeCount } from './intensity.ts';
 interface Flake {
   x: number;
   y: number;
+  /** Depth 0 (far) → 1 (near): drives size, speed, drift and opacity together. */
+  z: number;
   r: number;
   speed: number;
   sway: number;
@@ -41,15 +43,17 @@ function start(canvas: HTMLCanvasElement) {
   let raf = 0;
 
   const makeFlake = (anywhere: boolean): Flake => {
-    const r = (Math.random() * 1.8 + 0.7) * sizeBoost;
+    const z = Math.random() ** 1.6; // more far flakes than near ones
+    const r = (0.6 + z * 2.4) * sizeBoost;
     return {
       x: Math.random() * width,
       y: anywhere ? Math.random() * height : -10,
+      z,
       r,
-      speed: 0.35 + r * 0.32 + Math.random() * 0.3,
+      speed: 0.25 + z * 1.15 + Math.random() * 0.2,
       sway: Math.random() * 0.6 + 0.2,
       phase: Math.random() * Math.PI * 2,
-      alpha: Math.random() * 0.5 + 0.45,
+      alpha: 0.3 + z * 0.6,
     };
   };
 
@@ -68,9 +72,11 @@ function start(canvas: HTMLCanvasElement) {
   const frame = (t: number) => {
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = '#fff';
+    // Wind comes in gusts, not as a constant push.
+    const gust = 1 + 0.45 * Math.sin(t / 3100) * Math.sin(t / 1730);
     for (const f of flakes) {
       f.y += f.speed;
-      f.x += drift * (0.6 + f.r * 0.25) + Math.sin(t / 1400 + f.phase) * f.sway * 0.35;
+      f.x += drift * gust * (0.35 + f.z) + Math.sin(t / 1400 + f.phase) * f.sway * 0.35;
       if (f.y > height + 8) Object.assign(f, makeFlake(false));
       if (f.x > width + 8) f.x = -8;
       if (f.x < -8) f.x = width + 8;

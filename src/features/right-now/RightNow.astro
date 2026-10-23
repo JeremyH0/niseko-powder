@@ -26,7 +26,7 @@ const newSnowMeasured = obs?.newSnow.h24.ok ?? false;
 const dir = v(obs?.windDirDeg);
 ---
 
-<Section id="right-now" title={t('title')} badge={t('badge')} intro={t('intro')}>
+<Section id="right-now" title={t('title')} badge={t('badge')} intro={t('intro')} eyebrow="04">
   {
     stale && (
       <p role="status" class="mb-4 flex items-start gap-2 rounded-2xl bg-warn-bg px-4 py-3 text-sm font-medium text-warn-ink">
@@ -73,7 +73,15 @@ const dir = v(obs?.windDirDeg);
             note={dir !== null ? t('wind.from', { dir: compass(dir) }) : undefined}
           >
             {dir !== null && (
-              <Icon name="arrow" size={18} rotate={dir + 180} class="ml-1 inline-block align-baseline text-snow" />
+              <svg viewBox="0 0 40 40" width="36" height="36" class="ml-auto self-center" aria-hidden="true">
+                <circle cx="20" cy="20" r="17" fill="none" stroke="var(--line)" stroke-width="2" />
+                <text x="20" y="9" text-anchor="middle" font-size="7" font-weight="700" class="fill-ink-muted">N</text>
+                {/* Arrow points where the wind blows TO (from + 180°). */}
+                <g style={`transform: rotate(${dir + 180}deg); transform-origin: 20px 20px`}>
+                  <path d="M20 9 L25 22 L20 19 L15 22 Z" fill="var(--accent)" />
+                  <line x1="20" y1="19" x2="20" y2="31" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" />
+                </g>
+              </svg>
             )}
           </StatTile>
           <StatTile
@@ -88,7 +96,7 @@ const dir = v(obs?.windDirDeg);
         </p>
       </>
     ) : (
-      <p class="rounded-2xl border border-line bg-card p-4 text-ink-muted">{t('none')}</p>
+      <p class="glass rounded-2xl p-4 text-ink-muted">{t('none')}</p>
     )
   }
 </Section>

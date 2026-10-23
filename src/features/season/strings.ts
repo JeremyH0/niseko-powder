@@ -17,6 +17,7 @@ export const seasonStrings = defineMessages({
     'summary.empty': 'No season data yet.',
 
     'chart.title': 'Snow depth in Kutchan (cm)',
+    'chart.hint': 'Use the left and right arrow keys to read each day.',
     'legend.focus': '{season}',
     'legend.compare': '{season}',
     'legend.average': 'Average of {n} winters',

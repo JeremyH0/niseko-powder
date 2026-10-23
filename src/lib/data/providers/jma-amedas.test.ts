@@ -83,9 +83,20 @@ describe('jma-amedas edge cases', () => {
     expect(obs.gustMs).toEqual({ value: null, ok: false });
   });
 
+  it('treats quasi-normal (flag 1) as valid, like JMA does; doubtful (2–4) as not ok', () => {
+    const raw: JmaRaw = {
+      latestTime: null,
+      rows: { '20260115060000': { temp: [-3.2, 1], wind: [4.1, 2], snow: [120, 4], snow24h: [8, 0] } },
+    };
+    const obs = jmaAmedas.normalize(raw, { stationId: '16217' }, ctxWith({}));
+    expect(obs.tempC).toEqual({ value: -3.2, ok: true });
+    expect(obs.windMs).toEqual({ value: 4.1, ok: false });
+    expect(obs.snowDepthCm).toEqual({ value: 120, ok: false });
+  });
+
   it('logs unknown quality flags but keeps the value as not-ok', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const raw: JmaRaw = { latestTime: null, rows: { '20260115060000': { temp: [-3.2, 1] } } };
+    const raw: JmaRaw = { latestTime: null, rows: { '20260115060000': { temp: [-3.2, 9] } } };
     const obs = jmaAmedas.normalize(raw, { stationId: '16217' }, ctxWith({}));
     expect(obs.tempC).toEqual({ value: -3.2, ok: false });
     expect(warn).toHaveBeenCalledOnce();

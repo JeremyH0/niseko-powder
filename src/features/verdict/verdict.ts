@@ -4,7 +4,9 @@
  */
 import { findPoint, nearestHour } from '../../lib/data/forecast.ts';
 import type { Conditions } from '../../lib/data/types.ts';
-import { jstParts } from '../../lib/time.ts';
+import { DEFAULT_LOCATION_ID, LOCATIONS, type LocationId } from '../../config/locations.ts';
+import { sunTimes } from '../../lib/sun.ts';
+import { jstDate } from '../../lib/time.ts';
 
 export type VerdictWord = 'epic' | 'good' | 'some' | 'nope' | 'soon' | 'unknown';
 export type HeadlineKey =
@@ -27,18 +29,23 @@ export interface HeroModel {
   cm: number;
   nextDay: string | null;
   sky: SkyPhase;
+  /** ISO times for today at the location. */
+  sunrise: string;
+  sunset: string;
   weather: WeatherState;
   snowcap: boolean;
 }
 
 const point = (c: Conditions | null, id: string) => findPoint(c, id);
 
-/** Rough Niseko daylight in JST (good enough for a palette; sunrise varies ~1 h over the season). */
-export function skyPhase(now: Date): SkyPhase {
-  const { hour } = jstParts(now);
-  if (hour >= 5 && hour < 7) return 'dawn';
-  if (hour >= 7 && hour < 16) return 'day';
-  if (hour >= 16 && hour < 18) return 'dusk';
+/** Sky palette from the real sunrise/sunset at the location (twilight ≈ 40–50 min either side). */
+export function skyPhase(now: Date, lat: number, lon: number): SkyPhase {
+  const { sunrise, sunset } = sunTimes(jstDate(now), lat, lon);
+  const t = now.getTime();
+  const min = 60_000;
+  if (t >= sunrise.getTime() - 40 * min && t < sunrise.getTime() + 50 * min) return 'dawn';
+  if (t >= sunset.getTime() - 50 * min && t < sunset.getTime() + 40 * min) return 'dusk';
+  if (t > sunrise.getTime() && t < sunset.getTime()) return 'day';
   return 'night';
 }
 
@@ -60,7 +67,10 @@ export function weatherState(c: Conditions | null, now: Date): WeatherState {
 }
 
 export function heroModel(c: Conditions | null, now: Date): HeroModel {
-  const sky = skyPhase(now);
+  const loc = LOCATIONS[(c?.locationId as LocationId) ?? DEFAULT_LOCATION_ID] ?? LOCATIONS[DEFAULT_LOCATION_ID];
+  const { lat, lon } = loc.station;
+  const sky = skyPhase(now, lat, lon);
+  const sun = sunTimes(jstDate(now), lat, lon);
   const weather = weatherState(c, now);
   const summit = point(c, 'summit');
   const summitFresh = summit?.past24hSnowfallCm ?? 0;
@@ -71,7 +81,14 @@ export function heroModel(c: Conditions | null, now: Date): HeroModel {
   // Early season: show a cap once the summit has had snow and it's cold enough up there to stay.
   const snowcap = !preSeason || summitFresh >= 1 || (summitTodayMin !== null && summitTodayMin <= 0);
   const next = p?.nextBigSnow ?? null;
-  const base = { sky, weather, snowcap, nextDay: next?.date ?? null };
+  const base = {
+    sky,
+    sunrise: sun.sunrise.toISOString(),
+    sunset: sun.sunset.toISOString(),
+    weather,
+    snowcap,
+    nextDay: next?.date ?? null,
+  };
 
   if (!c || !p || (!c.observed && !c.forecast)) {
     return { ...base, word: 'unknown', headline: 'noData', cm: 0 };

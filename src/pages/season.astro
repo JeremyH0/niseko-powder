@@ -8,6 +8,7 @@ import { seasonStrings } from '../features/season/strings.ts';
 import { summarizeSeasons } from '../features/season/summary.ts';
 import { createTranslator } from '../i18n/index.ts';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteNav from '../ui/SiteNav.astro';
 
 export const prerender = false;
 
@@ -18,11 +19,11 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=600');
 ---
 
 <BaseLayout title={`${t('title')} · ${site.name}`} description={t('description')}>
-  <main id="main" class="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
-    <a href="/" class="text-sm font-medium text-snow underline">{t('back')}</a>
-    <div class="mt-6 mb-8 flex flex-wrap items-baseline gap-x-3 gap-y-2">
+  <header class="mx-auto w-full max-w-6xl px-4 pt-4 sm:px-6"><SiteNav current="season" /></header>
+  <main id="main" class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
+    <div class="mb-8 flex flex-wrap items-baseline gap-x-3 gap-y-2">
       <h1 class="font-display text-5xl font-black tracking-tight">{t('title')}</h1>
-      <span class="rounded-full border border-line bg-card px-2.5 py-0.5 text-xs font-medium text-ink-muted">{t('badge')}</span>
+      <span class="glass rounded-full px-2.5 py-0.5 text-xs font-medium text-ink-muted">{t('badge')}</span>
     </div>
     <p class="mb-8 max-w-2xl text-ink-muted">{t('intro')}</p>
     <SeasonOverview data={data} summary={summary} />

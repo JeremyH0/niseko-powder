@@ -14,6 +14,8 @@ export const outlookStrings = defineMessages({
     'big.noneNote': 'Nothing ≥ {cm} cm in 7 days',
     'big.note': '~{cm} cm on the summit',
     'big.next24': 'Next 24 h',
+    'big.tomorrow': 'tomorrow',
+    'big.inDays': 'in {n} days',
     'town.label': 'Town now',
     'town.note.rain': 'Raining in Kutchan',
     'town.note.snow': 'Snowing in Kutchan',

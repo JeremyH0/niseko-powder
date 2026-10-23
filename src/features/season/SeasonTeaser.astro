@@ -18,14 +18,14 @@ const t = createTranslator(seasonStrings, locale);
 const [sentence] = seasonSentences(summary, locale);
 ---
 
-<Section id="season" title={t('teaser.title')} badge={t('badge')}>
+<Section id="season" title={t('teaser.title')} badge={t('badge')} eyebrow="03">
   <a
     href="/season"
-    class="group grid items-center gap-4 rounded-3xl border border-line bg-card p-4 transition hover:border-snow hover:shadow-lg hover:shadow-ink/5 sm:grid-cols-[1fr_1.2fr] sm:p-6"
+    class="glass reveal group grid items-center gap-4 rounded-3xl p-4 transition hover:border-snow sm:grid-cols-[1fr_1.2fr] sm:p-6"
   >
     <div>
       <p id="season-teaser-text" class="text-lg leading-snug">{sentence}</p>
-      <p class="mt-3 font-semibold text-snow">
+      <p class="mt-3 font-semibold text-accent">
         {t('teaser.cta')} <span aria-hidden="true" class="inline-block transition group-hover:translate-x-1">→</span>
       </p>
     </div>

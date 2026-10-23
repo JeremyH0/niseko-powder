@@ -24,6 +24,7 @@ src/
     jobs/                heartbeat, refresh-conditions, season-history (+ index.ts registry)
   lib/
     time.ts              JST helpers (fixed +09:00), JMA block names
+    sun.ts               sunrise/sunset (sunrise equation, ±2 min vs NAOJ) → sky palette + hero
     season.ts            seasons (1 Nov → 31 May): day index, merge, stats, averages
     format.ts            display formatting (JST times, °, cm, compass)
     powder/score.ts      the powder score (pure)
@@ -35,9 +36,10 @@ src/
       forecast.ts        small shared readers (findPoint, nearestHour, hoursAhead)
   config/                locations, powder thresholds, links, flags, site constants
   i18n/                  createTranslator / defineMessages + shared strings
-  ui/                    tokens (global.css), Icon, Section, StatTile, weather-icon
+  ui/                    tokens + glass + motion (global.css), SiteNav, Section, StatTile, Icon,
+                         ChartFrame + chart-interact.ts (hover/touch/keyboard read-out for every chart)
   features/
-    verdict/             hero: big word, headline, score ring, reasons, sky, mountains
+    verdict/             hero: frosted verdict, headline, score ring, powder stake, reasons, sky, mountains
     snowfall/            live canvas (client script) + intensity maths
     outlook/             at-a-glance tiles (fresh / next 24 h / next big snow / town now)
     forecast/            48-hour SVG chart + 7-day list
@@ -95,8 +97,12 @@ Key properties:
   value and records the error in `sources`).
 - Safety net: if the homepage finds no data or data older than 3 h, it sets a header and the
   Worker refreshes once in the background (`self-heal.ts`, KV lock = at most once per 10 min).
-- Client JavaScript is tiny and optional (~2.5 KB inline: snowfall canvas, share button).
-  Animations are CSS and switch off with `prefers-reduced-motion`.
+- Client JavaScript is small and optional: snowfall canvas, chart read-outs, share button.
+  Animations are CSS (entrance, scroll reveals via `animation-timeline: view()`, cross-document
+  view transitions) and only run under `prefers-reduced-motion: no-preference`.
+- Charts follow the dataviz rules: one axis per panel (small multiples, never dual-axis), ≤ 24px
+  bars with a 4px rounded data-end, solid hairline grids, legend + selective direct labels,
+  hover/keyboard tooltip, and a table view. Series colours validated for colour blindness.
 - Pages render the answer server-side, so it works with JavaScript off and in link previews.
 
 ## Free-plan budget (Workers Free, checked 2026-10-22)

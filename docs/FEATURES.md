@@ -48,6 +48,10 @@ Living list. Add ideas freely; build them one at a time with the "Add a feature"
 _(none yet)_
 
 ## Shipped
+- 2026-10-23 — **Redesign "Niseko night powder"**: frosted verdict, powder stake (ankle / boot /
+  knee), real sunrise/sunset-driven sky, stars and valley fog, depth-layered snowfall with gusts,
+  glass UI, scroll reveals + page transitions, charts rebuilt to dataviz rules with hover/keyboard
+  read-outs. Accuracy: JMA quasi-normal flag now valid, sun times ±2 min vs NAOJ.
 - 2026-10-23 — **Season tracker** (/season + homepage teaser): 10 winters of JMA Kutchan data,
   this season vs last vs average, stats and a table of every winter. Also: verdict always from
   the score (no "Not yet."), Lighthouse 100/100/100/100, public GitHub repo with CI.

@@ -1,0 +1,51 @@
+---
+/**
+ * Wraps a server-rendered SVG chart with the interactive read-out (crosshair or bar
+ * highlight + tooltip + keyboard). Without JavaScript it's just the static chart.
+ */
+export interface ChartRow {
+  /** Tooltip title, e.g. "Fri 03:00". */
+  t: string;
+  /** [series colour, formatted value, label] — value leads, label follows. */
+  r: [string, string, string][];
+}
+
+interface Props {
+  /** x position (viewBox units) of each data point, ascending. */
+  xs: number[];
+  rows: ChartRow[];
+  viewBoxWidth: number;
+  /** Plot area top/bottom (viewBox units) for the crosshair. */
+  top: number;
+  bottom: number;
+  mode?: 'cross' | 'bars';
+  /** Accessible name, e.g. "Next 48 hours chart". */
+  label: string;
+  hint: string;
+  class?: string;
+}
+const { xs, rows, viewBoxWidth, top, bottom, mode = 'cross', label, hint, class: className } = Astro.props;
+---
+
+<div
+  class:list={['chart touch-pan-y select-none', className]}
+  data-chart
+  data-mode={mode}
+  data-vbw={viewBoxWidth}
+  data-top={top}
+  data-bottom={bottom}
+  data-xs={JSON.stringify(xs.map((x) => Math.round(x * 10) / 10))}
+  data-rows={JSON.stringify(rows)}
+  tabindex="0"
+  role="group"
+  aria-label={`${label}. ${hint}`}
+>
+  <slot />
+  <div class="chart-cross pointer-events-none absolute top-0 left-0 w-px bg-ink/40" hidden></div>
+  <div class="chart-tip" hidden></div>
+  <p data-live class="sr-only" aria-live="polite"></p>
+</div>
+
+<script>
+  import './chart-interact.ts';
+</script>

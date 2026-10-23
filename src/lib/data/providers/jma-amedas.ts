@@ -11,8 +11,14 @@ import { ProviderError, type Provider, type ProviderContext } from './types.ts';
 
 const BASE = 'https://www.jma.go.jp/bosai/amedas';
 
-/** Quality flags we have seen and understood. 0 = normal; 5/6 = not measured (off-season). */
-const KNOWN_FLAGS = new Set([0, 5, 6]);
+/**
+ * JMA quality flags (AQC), from JMA's own AMeDAS page code (`AQC_INFO`, checked 2026-10-23):
+ * 0 normal · 1 ")" quasi-normal · 2, 3 "#" doubtful · 4 "]" insufficient data ·
+ * 5 休止中 (kyūshichū, "suspended", e.g. snow out of season) · 6 "×" missing.
+ * JMA itself treats 0 and 1 as valid values; so do we.
+ */
+const VALID_FLAGS = new Set([0, 1]);
+const KNOWN_FLAGS = new Set([0, 1, 2, 3, 4, 5, 6]);
 
 type JmaPair = [number | null, number];
 type JmaRow = Record<string, unknown>;
@@ -89,7 +95,7 @@ function normalize(raw: JmaRaw, { stationId }: JmaQuery): ObservedConditions {
       if (!isPair(v)) continue;
       const [value, flag] = v;
       if (!KNOWN_FLAGS.has(flag)) unknownFlags.add(flag);
-      return { value, ok: flag === 0 && value !== null };
+      return { value, ok: VALID_FLAGS.has(flag) && value !== null };
     }
     return { value: null, ok: false };
   }
@@ -97,7 +103,7 @@ function normalize(raw: JmaRaw, { stationId }: JmaQuery): ObservedConditions {
   const dir = pick('windDirection', 30);
   const windDirDeg: Reading<number> =
     dir.ok && dir.value !== null
-      ? // 16-point index, 1 = NNE … 16 = N; 0 = calm.
+      ? // JMA WDR_INFO: 0 = calm (静穏), 1 = NNE … 16 = N.
         { value: dir.value === 0 ? null : (dir.value % 16) * 22.5, ok: true }
       : { value: null, ok: false };
 

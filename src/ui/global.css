@@ -2,54 +2,74 @@
 @import '@fontsource-variable/fraunces/wght.css';
 
 /*
- * Design tokens — "snow globe" art direction.
- * Content surfaces follow the visitor's light/dark preference (AA contrast in both).
- * The hero sky has its own palette driven by JST time of day and the weather (see .sky below).
+ * Design tokens — "Niseko night powder".
+ * Light = bluebird day (icy white-blue), dark = deep Hokkaido night. Both AA.
+ * Chart series colours are validated with the dataviz palette validator (CVD + contrast):
+ *   snow = categorical slot 1 (blue), rain = slot 2 (orange). Text never wears them.
  */
 :root {
-  --paper: #eef2f7;
-  --card: #ffffff;
-  --ink: #0d1b2e;
-  --ink-muted: #475569;
-  --line: #d9e1ea;
-  --snow: #2f6fd6;
-  --snow-soft: #9cc3f5;
-  --rain: #b45309;
-  --rain-soft: #f3c48b;
-  --good: #0f766e;
-  --warn-bg: #fff4e5;
-  --warn-ink: #8a3b00;
-  --highlight: #e8f1ff;
+  color-scheme: light;
+  --paper: #eaf2fb;
+  --paper-2: #f6f9fd;
+  --card: rgb(255 255 255 / 0.72);
+  --card-solid: #f6f9fd;
+  --ink: #0b1b2f;
+  --ink-muted: #44566c;
+  --line: rgb(16 42 74 / 0.1);
+  --grid: rgb(16 42 74 / 0.09);
+  --accent: #1c5cab;
+  --snow: #2a78d6;
+  --snow-soft: #cde2fb;
+  --rain: #eb6834;
+  --neutral-series: #8693a5;
+  --neutral-series-2: #4f5d70;
+  --warn-bg: #fff2df;
+  --warn-ink: #7a3300;
+  --good: #0f6b52;
+  --highlight: rgb(42 120 214 / 0.1);
+  --glow-1: rgb(120 180 255 / 0.35);
+  --glow-2: rgb(180 220 255 / 0.45);
+  --shadow: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 18px 40px -26px rgb(12 40 80 / 0.45);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #0a1120;
-    --card: #111b2e;
-    --ink: #e7eef8;
-    --ink-muted: #a3b3c9;
-    --line: #22314b;
-    --snow: #7db3ff;
-    --snow-soft: #2f5ea8;
-    --rain: #f6b26b;
-    --rain-soft: #7a4a17;
-    --good: #5eead4;
-    --warn-bg: #3a2408;
-    --warn-ink: #ffd8a8;
-    --highlight: #15274a;
+    color-scheme: dark;
+    --paper: #060c18;
+    --paper-2: #0b1424;
+    --card: rgb(22 36 62 / 0.55);
+    --card-solid: #111c31;
+    --ink: #eaf2ff;
+    --ink-muted: #a8b8d0;
+    --line: rgb(190 215 255 / 0.12);
+    --grid: rgb(190 215 255 / 0.1);
+    --accent: #9cc5f7;
+    --snow: #3987e5;
+    --snow-soft: #1b3a66;
+    --rain: #d95926;
+    --neutral-series: #7d8ba0;
+    --neutral-series-2: #c3cede;
+    --warn-bg: #3b2408;
+    --warn-ink: #ffd9a8;
+    --good: #6ee7c5;
+    --highlight: rgb(57 135 229 / 0.16);
+    --glow-1: rgb(57 135 229 / 0.22);
+    --glow-2: rgb(120 90 220 / 0.16);
+    --shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 24px 48px -28px rgb(0 0 0 / 0.8);
   }
 }
 
 @theme inline {
   --color-paper: var(--paper);
   --color-card: var(--card);
+  --color-card-solid: var(--card-solid);
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
   --color-line: var(--line);
+  --color-accent: var(--accent);
   --color-snow: var(--snow);
   --color-snow-soft: var(--snow-soft);
   --color-rain: var(--rain);
-  --color-rain-soft: var(--rain-soft);
   --color-good: var(--good);
   --color-warn-bg: var(--warn-bg);
   --color-warn-ink: var(--warn-ink);
@@ -66,101 +86,175 @@
     background: var(--paper);
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
+  /* A soft winter atmosphere behind the content, so the glass cards have something to frost. */
   body {
-    background: var(--paper);
+    background:
+      radial-gradient(60rem 40rem at 85% 30rem, var(--glow-1), transparent 70%),
+      radial-gradient(50rem 36rem at 0% 70rem, var(--glow-2), transparent 70%),
+      linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
   }
-  .num,
-  table {
+  /* Tabular figures only where numbers line up (tables, axes); big numbers stay proportional. */
+  table,
+  .tabular {
     font-variant-numeric: tabular-nums;
   }
   :focus-visible {
     outline: 3px solid var(--snow);
     outline-offset: 3px;
-    border-radius: 6px;
+    border-radius: 8px;
   }
   a {
     text-underline-offset: 3px;
   }
 }
 
+/* ---------------------------------------------------------------- Surfaces */
+
+@utility glass {
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass {
+    background: var(--card-solid);
+  }
+}
+
 /* ---------------------------------------------------------------- Sky (hero) */
 
 .sky {
-  --sky-top: #0a1533;
-  --sky-bottom: #2a3d6e;
-  --ridge-far: #33477a;
-  --ridge-mid: #1d2b52;
-  --cap: #f3f7ff;
+  --sky-top: #050b1f;
+  --sky-mid: #13224a;
+  --sky-bottom: #2b3f73;
+  --ridge-far: #31467d;
+  --ridge-mid: #1a2850;
+  --fog: rgb(170 195 240 / 0.18);
+  --cap: #f2f7ff;
   --ring: #ffffff;
+  --stars: 1;
   color: #fff;
   background:
-    radial-gradient(120% 70% at 70% 0%, rgb(255 255 255 / 0.08), transparent 60%),
-    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 78%);
+    radial-gradient(90% 60% at 72% 8%, rgb(255 255 255 / 0.07), transparent 60%),
+    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 45%, var(--sky-bottom) 85%);
 }
 .sky[data-sky='dawn'] {
-  --sky-top: #1d2a57;
-  --sky-bottom: #c9878f;
-  --ridge-far: #7a6f99;
-  --ridge-mid: #3b3d6b;
+  --sky-top: #16214d;
+  --sky-mid: #5a4f86;
+  --sky-bottom: #e3a39a;
+  --ridge-far: #8b7aa6;
+  --ridge-mid: #3d3a6d;
+  --fog: rgb(255 210 200 / 0.22);
+  --stars: 0.25;
 }
 .sky[data-sky='day'] {
-  --sky-top: #174a8b;
-  --sky-bottom: #7fb2e5;
-  --ridge-far: #9fc1e4;
-  --ridge-mid: #4f7fb3;
+  --sky-top: #0f4a93;
+  --sky-mid: #2f74c2;
+  --sky-bottom: #8cc0ee;
+  --ridge-far: #a9c8e8;
+  --ridge-mid: #5684b8;
+  --fog: rgb(255 255 255 / 0.28);
+  --stars: 0;
 }
 .sky[data-sky='dusk'] {
-  --sky-top: #1b1f4b;
-  --sky-bottom: #d6806c;
-  --ridge-far: #8a6a8c;
-  --ridge-mid: #3a2f5c;
+  --sky-top: #141a46;
+  --sky-mid: #4b3a78;
+  --sky-bottom: #e08a6d;
+  --ridge-far: #8c6c8f;
+  --ridge-mid: #382e5e;
+  --fog: rgb(255 190 170 / 0.2);
+  --stars: 0.3;
 }
 /* Weather washes over the time-of-day palette. */
 .sky[data-weather='snow'] {
-  --sky-top: color-mix(in oklab, #3c4656 60%, var(--sky-top));
-  --sky-bottom: color-mix(in oklab, #9aa6b6 55%, var(--sky-bottom));
-  --ridge-far: color-mix(in oklab, #c4ccd6 55%, var(--ridge-far));
-  --ridge-mid: color-mix(in oklab, #6f7a8b 50%, var(--ridge-mid));
+  --sky-top: color-mix(in oklab, #2f3a4b 60%, var(--sky-top));
+  --sky-mid: color-mix(in oklab, #5c6879 55%, var(--sky-mid));
+  --sky-bottom: color-mix(in oklab, #a7b2c1 55%, var(--sky-bottom));
+  --ridge-far: color-mix(in oklab, #c9d1db 60%, var(--ridge-far));
+  --ridge-mid: color-mix(in oklab, #75808f 50%, var(--ridge-mid));
+  --fog: rgb(235 240 248 / 0.4);
+  --stars: 0;
 }
 .sky[data-weather='rain'] {
-  --sky-top: color-mix(in oklab, #2d3440 55%, var(--sky-top));
-  --sky-bottom: color-mix(in oklab, #6b7685 50%, var(--sky-bottom));
+  --sky-top: color-mix(in oklab, #232a35 55%, var(--sky-top));
+  --sky-mid: color-mix(in oklab, #434c59 50%, var(--sky-mid));
+  --sky-bottom: color-mix(in oklab, #737e8c 50%, var(--sky-bottom));
+  --fog: rgb(200 210 225 / 0.3);
+  --stars: 0;
 }
 .sky[data-weather='cloud'] {
-  --sky-top: color-mix(in oklab, #34404f 30%, var(--sky-top));
-  --sky-bottom: color-mix(in oklab, #8994a3 25%, var(--sky-bottom));
+  --sky-top: color-mix(in oklab, #2c3644 30%, var(--sky-top));
+  --sky-mid: color-mix(in oklab, #4d5868 25%, var(--sky-mid));
+  --sky-bottom: color-mix(in oklab, #8b96a6 25%, var(--sky-bottom));
+  --stars: 0;
 }
 .sky[data-verdict='epic'] {
-  --ring: #67e8f9;
+  --ring: #7fe6ff;
 }
 .sky[data-verdict='good'] {
-  --ring: #a5d8ff;
-}
-.sky-text-shadow {
-  text-shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 2px 24px rgb(0 0 0 / 0.18);
+  --ring: #b5dcff;
 }
 
-/* ---------------------------------------------------------------- Motion (CSS only) */
+/* Static star field (pure CSS, no requests). Visible on clear nights only. */
+.stars {
+  opacity: var(--stars);
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 28% 8%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 44% 22%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 61% 12%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 73% 28%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 86% 9%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 93% 31%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 6% 36%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 52% 4%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 36% 34%, #fff 50%, transparent 51%);
+  background-size: 640px 420px;
+}
 
+.sky-text {
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 0.25),
+    0 2px 28px rgb(0 0 0 / 0.2);
+}
+
+/* The verdict: frosted lettering. Solid white fallback keeps contrast if clip isn't supported. */
+.frost {
+  color: #fff;
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .frost {
+    background: linear-gradient(180deg, #ffffff 0%, #ffffff 45%, #d9ecff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 2px 18px rgb(0 0 0 / 0.25));
+  }
+}
+
+/* ---------------------------------------------------------------- Motion
+ * Default: static. Motion only when the visitor hasn't asked for less.
+ */
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    translate: 0 18px;
   }
-  to {
-    opacity: 1;
-    transform: none;
+}
+@keyframes settle {
+  from {
+    font-variation-settings: 'wght' 300;
+    letter-spacing: 0.04em;
   }
 }
 @keyframes grow-y {
   from {
-    transform: scaleY(0);
-  }
-}
-@keyframes grow-x {
-  from {
-    transform: scaleX(0);
+    scale: 1 0;
   }
 }
 @keyframes ring {
@@ -168,34 +262,125 @@
     stroke-dashoffset: var(--ring-full);
   }
 }
-.rise {
-  animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  animation-delay: calc(var(--i, 0) * 60ms);
+@keyframes fill-up {
+  from {
+    scale: 1 0;
+  }
 }
-.grow-y {
-  transform-origin: bottom;
-  animation: grow-y 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  animation-delay: calc(var(--i, 0) * 12ms + 200ms);
+@keyframes drift {
+  from {
+    translate: -2% 0;
+  }
+  to {
+    translate: 2% 0;
+  }
 }
-.grow-x {
-  transform-origin: left;
-  animation: grow-x 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  animation-delay: calc(var(--i, 0) * 60ms + 150ms);
+
+@media (prefers-reduced-motion: no-preference) {
+  .rise {
+    animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 70ms);
+  }
+  .settle {
+    animation: settle 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) both 0.15s;
+  }
+  .grow-y {
+    transform-box: fill-box;
+    transform-origin: bottom;
+    animation: grow-y 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 14ms + 150ms);
+  }
+  .ring-in {
+    animation: ring 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.4s both;
+  }
+  .fill-up {
+    transform-box: fill-box;
+    transform-origin: bottom;
+    animation: fill-up 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.5s both;
+  }
+  .fog {
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+
+  /* Scroll reveals: progressive enhancement, decorative only (no fallback by design). */
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    @keyframes reveal {
+      from {
+        opacity: 0;
+        translate: 0 32px;
+        scale: 0.98;
+      }
+    }
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+
+  /* Smooth page-to-page transitions (cross-document view transitions). */
+  @view-transition {
+    navigation: auto;
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.35s;
+}
+.vt-brand {
+  view-transition-name: brand;
+}
+
+/* ---------------------------------------------------------------- Charts */
+
+.chart {
+  position: relative;
+  outline-offset: 6px;
+}
+.chart-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  min-width: 9.5rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.75rem;
+  background: var(--card-solid);
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 28px -12px rgb(0 0 0 / 0.35);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  pointer-events: none;
+}
+.chart-tip[hidden] {
+  display: none;
+}
+.chart-tip .tip-title {
+  color: var(--ink-muted);
+  margin-bottom: 0.25rem;
+}
+.chart-tip .tip-row {
+  display: grid;
+  grid-template-columns: 0.9rem auto 1fr;
+  align-items: center;
+  gap: 0.4rem;
+}
+.chart-tip .tip-key {
+  height: 2px;
+  border-radius: 2px;
+}
+.chart-tip .tip-value {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.chart-tip .tip-label {
+  color: var(--ink-muted);
+  text-align: right;
 }
 
 /* Things that need JavaScript stay hidden until it runs. */
 html:not(.js) .js-only {
   display: none !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-delay: 0ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
 }

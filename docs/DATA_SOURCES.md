@@ -54,7 +54,13 @@ Each value is a pair `[value, qualityFlag]`. Value can be `null`.
 | `visibility` | m | `[20000.0, 0]` |
 | `weather` | weather code | `[7, 0]` |
 
-### Quality flags — **verify**
+### Quality flags — **verified 2026-10-23** from JMA's own AMeDAS page code (`AQC_INFO`)
+0 normal · 1 `)` quasi-normal (準正常, junseijō) · 2, 3 `#` doubtful · 4 `]` insufficient data ·
+5 休止中 (kyūshichū, "suspended", e.g. snow out of season) · 6 `×` missing. JMA's own code treats
+**0 and 1 as valid** — so do we. Wind direction (`WDR_INFO`): 0 = 静穏 (seion, "calm"),
+1 = NNE … 16 = N — matches our mapping.
+
+Original note:
 `0` = normal. Non-zero values mean estimated, missing, or "not observed in this period". In the
 October sample, `snow` came back `[null, 5]` and `snowNh` as `[0, 6]` — i.e. snow is not being
 measured yet this season. Treat any non-zero flag as "unreliable / show as —" unless documented

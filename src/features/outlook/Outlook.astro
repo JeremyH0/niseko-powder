@@ -29,7 +29,11 @@ const freshNote =
 
 const big = p?.nextBigSnow ?? null;
 const bigValue = big ? (big.date === jstDate(now) ? t('big.next24') : formatWeekday(dateFromJstDay(big.date))) : t('big.none');
-const bigNote = big ? t('big.note', { cm: formatCm(big.snowfallCm) }) : t('big.noneNote', { cm: powderConfig.bigSnowCm });
+const daysAway = big ? Math.round((Date.parse(`${big.date}T00:00:00Z`) - Date.parse(`${jstDate(now)}T00:00:00Z`)) / 86_400_000) : 0;
+const when = daysAway <= 0 ? '' : daysAway === 1 ? t('big.tomorrow') : t('big.inDays', { n: daysAway });
+const bigNote = big
+  ? [t('big.note', { cm: formatCm(big.snowfallCm) }), when].filter(Boolean).join(' · ')
+  : t('big.noneNote', { cm: powderConfig.bigSnowCm });
 
 const obs = conditions?.observed;
 const townTemp = obs?.tempC.ok ? obs.tempC.value : null;
@@ -37,11 +41,11 @@ const wet = obs?.precip1hMm.ok && (obs.precip1hMm.value ?? 0) > 0;
 const townNote = wet ? ((townTemp ?? 0) > 1 ? t('town.note.rain') : t('town.note.snow')) : t('town.note.dry');
 ---
 
-<section aria-label={t('title')} class="relative z-20 mx-auto -mt-10 w-full max-w-5xl px-4 sm:-mt-16 sm:px-6">
+<section aria-label={t('title')} class="relative z-20 mx-auto -mt-12 w-full max-w-6xl px-4 sm:-mt-20 sm:px-6">
   <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-    <StatTile class="rise shadow-lg shadow-ink/5" label={t('fresh.label')} value={formatCm(p?.freshCm)} unit="cm" note={freshNote} />
-    <StatTile class="rise shadow-lg shadow-ink/5" label={t('next24.label')} value={formatCm(p?.next24hCm)} unit="cm" note={t('next24.note')} />
-    <StatTile class="rise shadow-lg shadow-ink/5" label={t('big.label')} value={bigValue} note={bigNote} muted={!big} />
-    <StatTile class="rise shadow-lg shadow-ink/5" label={t('town.label')} value={formatTemp(townTemp)} note={townNote} />
+    <StatTile class="rise" label={t('fresh.label')} value={formatCm(p?.freshCm)} unit="cm" note={freshNote} />
+    <StatTile class="rise" label={t('next24.label')} value={formatCm(p?.next24hCm)} unit="cm" note={t('next24.note')} />
+    <StatTile class="rise" label={t('big.label')} value={bigValue} note={bigNote} muted={!big} />
+    <StatTile class="rise" label={t('town.label')} value={formatTemp(townTemp)} note={townNote} />
   </dl>
 </section>

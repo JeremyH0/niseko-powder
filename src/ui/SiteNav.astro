@@ -1,0 +1,48 @@
+---
+/** Top navigation. `overlay` sits on the hero sky (white text); `solid` on normal pages. */
+import { site } from '../config/site.ts';
+import { common } from '../i18n/common.ts';
+import { createTranslator, DEFAULT_LOCALE, type Locale } from '../i18n/index.ts';
+
+interface Props {
+  variant?: 'overlay' | 'solid';
+  current?: 'home' | 'season' | 'about';
+  locale?: Locale;
+}
+const { variant = 'solid', current, locale = DEFAULT_LOCALE } = Astro.props;
+const t = createTranslator(common, locale);
+const links = [
+  { href: '/season', key: 'nav.season', id: 'season' },
+  { href: '/about', key: 'nav.about', id: 'about' },
+] as const;
+---
+
+<nav
+  aria-label={t('nav.label')}
+  class:list={['flex items-center justify-between gap-3 text-sm', variant === 'solid' && 'text-ink']}
+>
+  <a href="/" class="vt-brand flex items-center gap-2 font-semibold tracking-tight whitespace-nowrap" aria-current={current === 'home' ? 'page' : undefined}>
+    <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"
+      ><g stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M16 4v24M5.6 10l20.8 12M5.6 22l20.8-12"></path></g></svg
+    >
+    {site.name}
+  </a>
+  <div class="flex items-center gap-1">
+    {
+      links.map((l) => (
+        <a
+          href={l.href}
+          aria-current={current === l.id ? 'page' : undefined}
+          class:list={[
+            'rounded-full px-3 py-1.5 font-medium whitespace-nowrap transition',
+            variant === 'overlay' ? 'hover:bg-white/15' : 'hover:bg-highlight',
+            current === l.id && (variant === 'overlay' ? 'bg-white/15' : 'bg-highlight'),
+          ]}
+        >
+          {t(l.key)}
+        </a>
+      ))
+    }
+    <slot />
+  </div>
+</nav>

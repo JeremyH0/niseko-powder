@@ -3,11 +3,13 @@ import { powderConfig } from '../../config/powder.ts';
 import { createTranslator, DEFAULT_LOCALE, type Locale } from '../../i18n/index.ts';
 import { findPoint } from '../../lib/data/forecast.ts';
 import type { Conditions } from '../../lib/data/types.ts';
-import { dateFromJstDay, formatCm, formatDayMonth, formatTemp, formatWeekday } from '../../lib/format.ts';
+import { dateFromJstDay, formatCm, formatDayMonth, formatNumber, formatTemp, formatWeekday } from '../../lib/format.ts';
 import { jstDate } from '../../lib/time.ts';
+import ChartFrame, { type ChartRow } from '../../ui/ChartFrame.astro';
 import Icon from '../../ui/Icon.astro';
 import Section from '../../ui/Section.astro';
 import { weatherIcon } from '../../ui/weather-icon.ts';
+import { W7, sevenDayColumns } from './chart.ts';
 import { forecastStrings } from './strings.ts';
 
 interface Props {
@@ -26,81 +28,143 @@ const today = jstDate(now);
 const days = (summit?.daily ?? []).map((d) => {
   const m = mid?.daily.find((x) => x.date === d.date);
   const b = base?.daily.find((x) => x.date === d.date);
+  const wind = m?.windMaxMs ?? d.windMaxMs;
   return {
     date: d.date,
+    label: d.date === today ? t('week.today') : formatWeekday(dateFromJstDay(d.date)),
     summitCm: d.snowfallCm ?? 0,
     midCm: m?.snowfallCm ?? 0,
     summitMin: d.tMinC,
     summitMax: d.tMaxC,
     baseMax: b?.tMaxC ?? null,
     baseRain: b?.rainMm ?? 0,
-    wind: m?.windMaxMs ?? d.windMaxMs,
+    wind,
     gust: d.gustMaxMs,
     code: m?.weatherCode ?? d.weatherCode,
+    big: (d.snowfallCm ?? 0) >= powderConfig.bigSnowCm,
+    windy: (wind ?? 0) >= powderConfig.holdsMs || (d.gustMaxMs ?? 0) >= powderConfig.holdsGustMs,
   };
 });
-const scaleMax = Math.max(20, ...days.map((d) => d.summitCm));
+const { cols, max } = sevenDayColumns(days.map((d) => ({ date: d.date, snowfallCm: d.summitCm })));
+const rows: ChartRow[] = days.map((d) => ({
+  t: `${d.label} ${formatDayMonth(dateFromJstDay(d.date))}`,
+  r: [
+    ['var(--snow)', `${formatCm(d.summitCm)} cm`, t('week.tip.summit')],
+    ['var(--snow)', `${formatCm(d.midCm)} cm`, t('week.tip.mid')],
+    ['var(--rain)', `${formatNumber(d.baseRain, 1)} mm`, t('week.tip.rain')],
+    ['var(--neutral-series-2)', `${formatTemp(d.summitMin)} / ${formatTemp(d.summitMax)}`, t('week.tip.temp')],
+    ['var(--neutral-series-2)', formatTemp(d.baseMax), t('week.tip.base')],
+    ['var(--neutral-series)', `${formatNumber(d.wind)} / ${formatNumber(d.gust)} m/s`, t('week.tip.wind')],
+  ],
+}));
 ---
 
 {
   days.length > 0 && (
-    <Section id="week" title={t('week.title')} badge={t('week.badge')}>
-      <ol class="overflow-hidden rounded-3xl border border-line bg-card">
-        {days.map((d, i) => {
-          const big = d.summitCm >= powderConfig.bigSnowCm;
-          const windy = (d.wind ?? 0) >= powderConfig.holdsMs || (d.gust ?? 0) >= powderConfig.holdsGustMs;
-          return (
-            <li
-              class:list={[
-                'grid grid-cols-[4.2rem_2rem_1fr_auto] items-center gap-x-3 gap-y-1 px-4 py-3 sm:grid-cols-[6rem_2rem_1fr_auto_13rem] sm:px-6',
-                i > 0 && 'border-t border-line',
-                big && 'bg-highlight',
-              ]}
-            >
-              <div class="leading-tight">
-                <span class="block font-semibold">{d.date === today ? t('week.today') : formatWeekday(dateFromJstDay(d.date))}</span>
-                <span class="num text-xs text-ink-muted">{formatDayMonth(dateFromJstDay(d.date))}</span>
-              </div>
-              <Icon name={weatherIcon(d.code)} size={24} class="text-ink-muted" />
-              <div class="min-w-0">
-                <div class="h-3 overflow-hidden rounded-full bg-ink/5" aria-hidden="true">
-                  <div
-                    class="grow-x h-full rounded-full bg-snow"
-                    style={`width:${Math.max(d.summitCm > 0 ? 3 : 0, (d.summitCm / scaleMax) * 100)}%; --i:${i}`}
-                  />
-                </div>
-                <p class="mt-1 flex flex-wrap gap-x-3 text-xs text-ink-muted">
-                  {big && <span class="font-semibold text-snow">{t('week.bigSnow')}</span>}
-                  {d.midCm >= 1 && (
-                    <span class="num">
-                      {t('week.mid')} {formatCm(d.midCm)} cm
-                    </span>
-                  )}
-                  {d.baseRain >= 1 && (
-                    <span class="num text-rain">
-                      {Math.round(d.baseRain)} mm {t('week.rainBase')}
-                    </span>
-                  )}
-                  {windy && (
-                    <span class="flex items-center gap-1 font-medium text-warn-ink">
-                      <Icon name="wind" size={12} />
-                      {t('week.windy')}
-                    </span>
-                  )}
-                </p>
-              </div>
-              <p class="num text-right" aria-label={t('week.snowLabel', { cm: formatCm(d.summitCm) })}>
-                <span class="font-display text-2xl font-semibold">{formatCm(d.summitCm)}</span>
-                <span class="text-sm text-ink-muted"> cm</span>
-              </p>
-              <p class="num col-span-4 text-xs text-ink-muted sm:col-span-1 sm:whitespace-nowrap sm:text-right sm:text-sm">
-                {t('week.summit')} {formatTemp(d.summitMin)}/{formatTemp(d.summitMax)} · {t('week.base')} {formatTemp(d.baseMax)}
-              </p>
-            </li>
-          );
-        })}
-      </ol>
-      {conditions?.forecast && <p class="mt-3 text-xs text-ink-muted">{t('week.source', { model: conditions.forecast.model })}</p>}
+    <Section id="week" title={t('week.title')} badge={t('week.badge')} intro={t('week.intro')} eyebrow="02">
+      <div class="glass reveal rounded-3xl p-4 sm:p-6">
+        <p class="mb-1 text-right text-xs text-ink-muted">{t('week.axis', { max })}</p>
+        <ChartFrame
+          xs={cols.map((c) => c.cx)}
+          rows={rows}
+          viewBoxWidth={W7.width}
+          top={0}
+          bottom={W7.base}
+          mode="bars"
+          label={t('week.title')}
+          hint={t('chart.hint')}
+        >
+          <svg viewBox={`0 0 ${W7.width} ${W7.height}`} class="block w-full" aria-hidden="true">
+            {cols.map((c) => (
+              <rect data-i={cols.indexOf(c)} x={c.cx - W7.width / days.length / 2 + 4} y="0" width={W7.width / days.length - 8} height={W7.base + 4} rx="14" class="day-hit" />
+            ))}
+            <line x1="0" x2={W7.width} y1={W7.base} y2={W7.base} stroke="var(--grid)" />
+            {cols.map((c, i) => c.path && <path class="grow-y" style={`--i:${i * 4}`} d={c.path} fill="var(--snow)" />)}
+          </svg>
+          {/* Value labels in HTML so they stay readable at any width (SVG text would shrink). */}
+          <div class="pointer-events-none absolute inset-x-0 top-0" style={`aspect-ratio:${W7.width}/${W7.height}`} aria-hidden="true">
+            {cols.map((c) => (
+              <span
+                class:list={['absolute -translate-x-1/2 -translate-y-full font-semibold', c.summitCm >= 1 ? 'text-lg text-ink sm:text-2xl' : 'text-sm text-ink-muted sm:text-base']}
+                style={`left:${(c.cx / W7.width) * 100}%; top:${((c.path ? c.labelY + 4 : W7.base - 4) / W7.height) * 100}%`}
+              >
+                {formatCm(c.summitCm)}
+              </span>
+            ))}
+          </div>
+          <ol class="mt-2 grid grid-cols-7 text-center text-xs sm:text-sm">
+            {days.map((d) => (
+              <li class="flex flex-col items-center gap-1 px-0.5">
+                <span class:list={['font-semibold', d.date === today && 'text-accent']}>{d.label}</span>
+                <Icon name={weatherIcon(d.code)} size={22} class="text-ink-muted" />
+                <span class="tabular text-ink-muted">
+                  {formatTemp(d.summitMin)}
+                  <span class="hidden sm:inline">/{formatTemp(d.summitMax)}</span>
+                </span>
+                {d.big && <span class="rounded-full bg-ink px-1.5 py-0.5 text-[10px] font-semibold text-paper sm:text-xs">{t('week.bigSnow')}</span>}
+                {d.baseRain >= 1 && (
+                  <span class="flex items-center gap-0.5 text-ink-muted" title={t('week.rainBase')}>
+                    <span class="inline-block h-2 w-2 rounded-[2px] bg-rain" aria-hidden="true" />
+                    {Math.round(d.baseRain)}mm
+                  </span>
+                )}
+                {d.windy && (
+                  <span class="flex items-center gap-0.5 font-medium text-warn-ink" title={t('week.windy')}>
+                    <Icon name="wind" size={12} label={t('week.windy')} />
+                  </span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </ChartFrame>
+
+        <details class="mt-4 text-sm">
+          <summary class="cursor-pointer font-medium text-accent">{t('week.table')}</summary>
+          <div class="mt-3 overflow-x-auto">
+            <table class="w-full min-w-[520px] text-left">
+              <thead class="text-ink-muted">
+                <tr>
+                  <th class="py-1 pr-3 font-medium">{t('week.col.day')}</th>
+                  <th class="py-1 pr-3 text-right font-medium">{t('week.col.summit')}</th>
+                  <th class="py-1 pr-3 text-right font-medium">{t('week.col.mid')}</th>
+                  <th class="py-1 pr-3 text-right font-medium">{t('week.col.rain')}</th>
+                  <th class="py-1 pr-3 text-right font-medium">{t('week.col.temp')}</th>
+                  <th class="py-1 pr-3 text-right font-medium">{t('week.col.wind')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {days.map((d) => (
+                  <tr class="border-t border-line">
+                    <td class="py-1 pr-3">
+                      {d.label} {formatDayMonth(dateFromJstDay(d.date))}
+                    </td>
+                    <td class="py-1 pr-3 text-right">{formatCm(d.summitCm)}</td>
+                    <td class="py-1 pr-3 text-right">{formatCm(d.midCm)}</td>
+                    <td class="py-1 pr-3 text-right">{formatNumber(d.baseRain, 1)}</td>
+                    <td class="py-1 pr-3 text-right">
+                      {formatTemp(d.summitMin)} / {formatTemp(d.summitMax)}
+                    </td>
+                    <td class="py-1 pr-3 text-right">
+                      {formatNumber(d.wind)} / {formatNumber(d.gust)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+      {conditions?.forecast && <p class="mt-3 max-w-3xl text-xs text-ink-muted">{t('week.source', { model: conditions.forecast.model })}</p>}
     </Section>
   )
 }
+
+<style>
+  .day-hit {
+    fill: transparent;
+    transition: fill 0.15s;
+  }
+  .day-hit:global(.is-active) {
+    fill: var(--highlight);
+  }
+</style>

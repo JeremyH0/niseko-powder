@@ -1,15 +1,18 @@
 ---
 /**
- * The answer. Big word, plain-English headline, score and reasons, on a sky that
- * follows the JST time of day and the weather. The `atmosphere` slot takes the snowfall canvas.
+ * The answer. Big frosted word, plain-English headline, then a glass panel with the
+ * powder score, the powder stake and the reasons — on a sky that follows the real
+ * sunrise/sunset at Niseko and the weather. The `atmosphere` slot takes the snowfall canvas.
  */
 import { site } from '../../config/site.ts';
 import { createTranslator, DEFAULT_LOCALE, type Locale } from '../../i18n/index.ts';
 import type { Conditions, PowderReason } from '../../lib/data/types.ts';
 import { formatAge, formatClock, formatFullDate, formatTemp } from '../../lib/format.ts';
 import { minutesBetween } from '../../lib/time.ts';
+import SiteNav from '../../ui/SiteNav.astro';
 import { verdictCopy } from './copy.ts';
 import Mountains from './Mountains.astro';
+import PowderStake from './PowderStake.astro';
 import ScoreRing from './ScoreRing.astro';
 import { verdictStrings } from './strings.ts';
 
@@ -34,7 +37,7 @@ function reasonText(r: PowderReason): string {
     age: formatAge(p.minutes ?? 0),
   });
 }
-// Most informative first: things that changed the score, then context. Max 4 chips.
+// Most informative first: what changed the score, then context. Max 4 chips.
 const reasons = [...(powder?.reasons ?? [])]
   .filter((r) => `reason.${r.code}` in verdictStrings.en)
   .sort((a, b) => Math.abs(b.points) - Math.abs(a.points))
@@ -52,76 +55,94 @@ const updatedAt = conditions?.observed?.observedAt ?? conditions?.generatedAt ??
 ---
 
 <header
-  class="sky relative isolate flex min-h-[min(92svh,860px)] flex-col overflow-hidden sm:min-h-[min(100svh,900px)]"
+  class="sky relative isolate flex min-h-[min(94svh,900px)] flex-col overflow-hidden"
   data-sky={m.sky}
   data-weather={m.weather}
   data-verdict={powder?.verdict ?? 'none'}
 >
+  <div class="stars pointer-events-none absolute inset-x-0 top-0 h-[65%]" aria-hidden="true"></div>
   <slot name="atmosphere" />
 
-  <div class="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pt-4 pb-[clamp(170px,27vw,380px)] sm:px-6">
-    <nav class="flex items-center justify-between gap-3 text-sm" aria-label="Site">
-      <a href="/" class="flex items-center gap-2 whitespace-nowrap font-semibold tracking-tight">
-        <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"
-          ><g stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
-            ><path d="M16 4v24M5.6 10l20.8 12M5.6 22l20.8-12"></path></g
-          ></svg
-        >
-        {site.name}
-      </a>
+  <div class="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pt-4 pb-[clamp(190px,28vw,400px)] sm:px-6">
+    <SiteNav variant="overlay" current="home">
       {
         delayedBy !== null ? (
-          <a href="#right-now" class="num whitespace-nowrap rounded-full bg-amber-300 px-2.5 py-1 text-xs font-semibold text-amber-950">
+          <a href="#right-now" class="ml-1 rounded-full bg-amber-300 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-amber-950">
             {t('delayed', { age: formatAge(delayedBy) })}
           </a>
         ) : (
           updatedAt && (
-            <a href="#right-now" class="num whitespace-nowrap rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium backdrop-blur-sm hover:bg-white/25">
+            <a href="#right-now" class="ml-1 hidden rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium whitespace-nowrap backdrop-blur-sm hover:bg-white/25 sm:inline">
               {t('updated', { time: formatClock(updatedAt) })}
             </a>
           )
         )
       }
-    </nav>
+    </SiteNav>
 
-    <div class="sky-text-shadow mt-[8vh] flex flex-1 flex-col justify-start sm:mt-[10vh]">
-      <p class="rise text-sm font-medium uppercase tracking-[0.18em] opacity-85" style="--i:0">
-        {t('today.label')} · {formatFullDate(now)}
+    <div class="sky-text mt-[7vh] flex flex-1 flex-col sm:mt-[9vh]">
+      <p class="rise flex flex-wrap gap-x-3 gap-y-1 text-[0.8rem] font-medium tracking-[0.16em] uppercase opacity-90" style="--i:0">
+        <span>{t('today.label')} · {formatFullDate(now)}</span>
+        <span class="tracking-normal normal-case opacity-90">
+          {t('sun', { rise: formatClock(m.sunrise), set: formatClock(m.sunset) })}
+        </span>
       </p>
       <h1 class="mt-3">
         <span class="rise block text-xl font-medium sm:text-2xl" style="--i:1">{question}</span>
-        <span
-          class="rise mt-1 block font-display text-[clamp(4.5rem,22vw,11rem)] font-black leading-[0.9] tracking-tight"
-          style="--i:2">{word}</span
-        >
+        <span class="rise mt-1 block" style="--i:2">
+          <span class="frost settle block font-display text-[clamp(4.75rem,23vw,12.5rem)] leading-[0.88] font-black tracking-tight">{word}</span>
+        </span>
       </h1>
-      <p class="rise mt-5 max-w-xl text-lg leading-snug sm:text-2xl" style="--i:3">{headline}</p>
+      <p class="rise mt-5 max-w-2xl text-lg leading-snug text-balance sm:text-2xl" style="--i:3">{headline}</p>
 
-      <div class="rise mt-7 flex flex-wrap items-center gap-x-6 gap-y-4" style="--i:4">
-        {powder && <ScoreRing score={powder.score} label={t('score.label')} of={t('score.of')} />}
-        {
-          reasons.length > 0 && (
-            <ul class="flex max-w-xl flex-wrap gap-2 text-sm" aria-label="Why">
-              {reasons.map((r) => (
-                <li
-                  class:list={[
-                    'rounded-full px-3 py-1 backdrop-blur-sm',
-                    r.points > 0 && 'bg-white/25 font-medium',
-                    r.points < 0 && 'bg-black/25 ring-1 ring-amber-200/70',
-                    r.points === 0 && 'bg-white/12',
-                  ]}
-                >
-                  {r.points > 0 ? '▲ ' : r.points < 0 ? '▼ ' : ''}
-                  {reasonText(r)}
-                </li>
-              ))}
-            </ul>
-          )
-        }
-      </div>
-      <p class="rise mt-4 text-sm" style="--i:5">
-        <a href="/about#score" class="underline decoration-white/50 hover:decoration-white">{t('score.how')}</a>
-      </p>
+      {
+        powder && (
+          <div
+            class="rise mt-8 grid max-w-4xl grid-cols-2 gap-x-3 gap-y-4 rounded-3xl border border-white/15 bg-white/10 p-4 backdrop-blur-md sm:grid-cols-[auto_auto_1fr] sm:items-center sm:gap-8 sm:p-5"
+            style="--i:4"
+          >
+            <ScoreRing score={powder.score} label={t('score.label')} of={t('score.of')} />
+            <PowderStake
+              cm={powder.freshCm}
+              label={t('stake.label')}
+              note={t('stake.note')}
+              feel={{
+                none: t('stake.none'),
+                dusting: t('stake.dusting'),
+                ankle: t('stake.ankle'),
+                boot: t('stake.boot'),
+                knee: t('stake.knee'),
+                deep: t('stake.deep'),
+              }}
+              landmarks={{ ankle: t('stake.mark.ankle'), boot: t('stake.mark.boot'), knee: t('stake.mark.knee') }}
+            />
+            <div class="col-span-2 min-w-0 sm:col-span-1 sm:border-l sm:border-white/15 sm:pl-6">
+              {reasons.length > 0 && (
+                <ul class="flex flex-wrap gap-2 text-sm" aria-label={t('reasons.label')}>
+                  {reasons.map((r) => (
+                    <li
+                      class:list={[
+                        'rounded-full px-3 py-1',
+                        r.points > 0 && 'bg-white/25 font-medium',
+                        r.points < 0 && 'bg-black/25 ring-1 ring-amber-200/70',
+                        r.points === 0 && 'bg-white/12',
+                      ]}
+                    >
+                      <span aria-hidden="true">{r.points > 0 ? '▲ ' : r.points < 0 ? '▼ ' : ''}</span>
+                      {reasonText(r)}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p class="mt-3 text-sm">
+                <a href="/about#score" class="underline decoration-white/50 hover:decoration-white">
+                  {t('score.how')}
+                </a>
+              </p>
+            </div>
+          </div>
+        )
+      }
     </div>
   </div>
 
