@@ -35,6 +35,7 @@ const pts = (n: number) => (n > 0 ? `+${n}` : `−${Math.abs(n)}`);
               ))
             }
           </ul>
+          <p>{t('sources.history', { block: s.pastData.blockNo })} <a class="underline" href="/season">/season</a></p>
           <p>{t('sources.refresh')}</p>
         </div>
       </Section>

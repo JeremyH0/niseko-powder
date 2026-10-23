@@ -54,6 +54,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
           <p class="mt-1 max-w-md">{t('footer.about')}</p>
           <p class="mt-3">{t('footer.nonCommercial')}</p>
           <p class="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+            <a class="font-medium text-ink underline" href="/season">{t('footer.season')}</a>
             <a class="font-medium text-ink underline" href="/about">{t('footer.methodology')}</a>
             <a class="font-medium text-ink underline" href="/api/conditions.json">{t('footer.api')}</a>
           </p>

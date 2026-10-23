@@ -62,11 +62,13 @@ so the site is indexed and ready when people start searching.
       keyboard navigation, screen-reader labels for every number.
 
 ## Phase 4 — Season tracker
-- [ ] Daily snapshot job (one row per day) stored in D1 (or KV).
-- [ ] One-off script to seed past seasons for Kutchan from JMA past data (or Open-Meteo archive as
-      labelled fallback). Commit the seed JSON.
-- [ ] `/season` page: this season vs last season vs average, animated SVG chart, key stats
-      (deepest day, biggest 24 h dump, days with 20 cm+).
+- [x] Daily snapshot job stored in KV (`history:<location>:<season>`), from the same JMA
+      past-data pages as the seed, re-read twice a day so missed days fix themselves.
+- [x] One-off script to seed past seasons for Kutchan from JMA past data
+      (`npm run seed:season`, 10 winters 2016-17 → 2025-26). Seed JSON committed.
+- [x] `/season` page: this season vs last season vs average (+ range of past winters), SVG chart,
+      key stats (deepest day, biggest day, days with 20 cm+), every winter in a table; teaser on
+      the homepage.
 
 ## Phase 5 — Reach
 - [ ] SEO: titles/descriptions, schema.org markup, sitemap, robots, canonical URLs.

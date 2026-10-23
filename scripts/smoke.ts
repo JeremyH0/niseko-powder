@@ -37,6 +37,10 @@ if (data?.generatedAt) {
   check('data is fresh (< 2 h)', ageMin < 120, `${Math.round(ageMin)} min old`);
 }
 
+const season = await fetch(`${base}/season`);
+const seasonHtml = await season.text();
+check('season tracker renders', season.status === 200 && seasonHtml.includes('Season tracker') && seasonHtml.includes('<svg'));
+
 for (const path of ['/about', '/manifest.webmanifest', '/robots.txt']) {
   const res = await fetch(`${base}${path}`);
   check(`${path} responds 200`, res.status === 200, String(res.status));

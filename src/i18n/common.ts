@@ -11,6 +11,7 @@ export const common = defineMessages({
     'footer.credits': 'Data credits',
     'footer.nonCommercial': 'Free and non-commercial. No ads, no cookies, no tracking.',
     'footer.methodology': 'How it works',
+    'footer.season': 'Season tracker',
     'footer.api': 'JSON data',
     'footer.disclaimer':
       'Not an official forecast. Town readings are from Kutchan (176 m), not the mountain. Check official lift and avalanche information before you go.',

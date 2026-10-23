@@ -3,8 +3,8 @@
  * Keep the list short: delete a flag once its feature is permanently on.
  */
 export const flags = {
-  /** Season tracker page and chart (Phase 4). */
-  seasonTracker: false,
+  /** Season tracker teaser on the homepage (the /season page itself is always on). */
+  seasonTracker: true,
   /** Imperial units toggle (backlog). */
   imperialToggle: false,
   /** Live snowfall canvas (Phase 3). */

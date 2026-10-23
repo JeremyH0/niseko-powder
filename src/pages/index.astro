@@ -4,6 +4,7 @@
  * HTML (works with JavaScript off, and in link previews). The page only composes features.
  */
 import { env } from 'cloudflare:workers';
+import { isEnabled } from '../config/flags.ts';
 import { DEFAULT_LOCATION_ID } from '../config/locations.ts';
 import { site } from '../config/site.ts';
 import Next48h from '../features/forecast/Next48h.astro';
@@ -11,6 +12,9 @@ import SevenDay from '../features/forecast/SevenDay.astro';
 import Links from '../features/links/Links.astro';
 import Outlook from '../features/outlook/Outlook.astro';
 import RightNow from '../features/right-now/RightNow.astro';
+import { loadSeasons } from '../features/season/load.ts';
+import SeasonTeaser from '../features/season/SeasonTeaser.astro';
+import { summarizeSeasons } from '../features/season/summary.ts';
 import Share from '../features/share/Share.astro';
 import SnowCanvas from '../features/snowfall/SnowCanvas.astro';
 import { verdictCopy } from '../features/verdict/copy.ts';
@@ -25,7 +29,10 @@ import { REFRESH_HEADER, SELF_HEAL_AFTER_MINUTES } from '../worker/self-heal.ts'
 export const prerender = false;
 
 const now = new Date();
-const conditions = await readConditions(env.CONDITIONS, DEFAULT_LOCATION_ID);
+const [conditions, seasons] = await Promise.all([
+  readConditions(env.CONDITIONS, DEFAULT_LOCATION_ID),
+  isEnabled('seasonTracker') ? loadSeasons(env.CONDITIONS, DEFAULT_LOCATION_ID, now) : null,
+]);
 
 // Fresh deploy or a broken cron: ask the Worker to refresh in the background (rate-limited).
 if (!conditions || minutesBetween(conditions.generatedAt, now) > SELF_HEAL_AFTER_MINUTES) {
@@ -51,6 +58,7 @@ const description = `${copy.word} ${copy.headline} ${tc('site.description')}`;
       <Share word={copy.word} headline={copy.headline} url={Astro.url.origin + '/'} />
       <Next48h conditions={conditions} now={now} />
       <SevenDay conditions={conditions} now={now} />
+      {seasons && <SeasonTeaser data={seasons} summary={summarizeSeasons(seasons)} />}
       <RightNow conditions={conditions} now={now} />
       <Links />
     </div>

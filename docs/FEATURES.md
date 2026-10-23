@@ -48,6 +48,9 @@ Living list. Add ideas freely; build them one at a time with the "Add a feature"
 _(none yet)_
 
 ## Shipped
+- 2026-10-23 — **Season tracker** (/season + homepage teaser): 10 winters of JMA Kutchan data,
+  this season vs last vs average, stats and a table of every winter. Also: verdict always from
+  the score (no "Not yet."), Lighthouse 100/100/100/100, public GitHub repo with CI.
 - 2026-10-23 — Homepage: verdict + powder score with reasons, at-a-glance tiles (incl. **next big
   snow**), 48-hour SVG chart (snow summit / rain base / temp mid), 7-day mountain forecast, right
   now in Kutchan, official links, share button ("send to the group chat"), live snowfall canvas

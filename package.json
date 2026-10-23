@@ -18,7 +18,8 @@
     "probe": "node scripts/probe-data.ts",
     "cf-typegen": "wrangler types",
     "postinstall": "wrangler types",
-    "smoke": "node scripts/smoke.ts"
+    "smoke": "node scripts/smoke.ts",
+    "seed:season": "node scripts/seed-season-history.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.2",

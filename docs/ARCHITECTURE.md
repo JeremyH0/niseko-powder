@@ -21,16 +21,17 @@ src/
   worker/
     scheduled.ts         runJobs(): runs due jobs in parallel, isolates failures
     self-heal.ts         background refresh when KV is empty/very old (KV lock, max 1 per 10 min)
-    jobs/                heartbeat, refresh-conditions (+ index.ts registry)
+    jobs/                heartbeat, refresh-conditions, season-history (+ index.ts registry)
   lib/
     time.ts              JST helpers (fixed +09:00), JMA block names
+    season.ts            seasons (1 Nov → 31 May): day index, merge, stats, averages
     format.ts            display formatting (JST times, °, cm, compass)
     powder/score.ts      the powder score (pure)
     data/
       types.ts           the `Conditions` contract between Worker and UI
-      providers/         jma-amedas.ts, open-meteo.ts (fetch → normalize → typed result)
+      providers/         jma-amedas.ts, open-meteo.ts, jma-daily.ts (fetch → normalize → typed result)
       build-conditions.ts  merge fresh results with the previous good data
-      store.ts           KV keys: conditions:<locationId>
+      store.ts           KV keys: conditions:<locationId>, history:<locationId>:<season>
       forecast.ts        small shared readers (findPoint, nearestHour, hoursAhead)
   config/                locations, powder thresholds, links, flags, site constants
   i18n/                  createTranslator / defineMessages + shared strings
@@ -43,10 +44,12 @@ src/
     right-now/           Kutchan town observations + stale banner
     links/               official links (from config/links.ts)
     share/               share sheet / copy link
+    season/              season tracker: load (seed + KV), summary, chart, page body, homepage teaser
     about/               methodology copy
   layouts/BaseLayout.astro  head/meta/manifest, skip link, footer + attributions
-  pages/                 index (SSR), about (static), 404 (static), api/conditions.json
-scripts/                 probe-data.ts (fixtures), smoke.ts (checks a running site)
+  data/                  committed seed: season-history.<locationId>.json (from JMA past data)
+  pages/                 index (SSR), season (SSR), about (static), 404 (static), api/conditions.json
+scripts/                 probe-data.ts (fixtures), seed-season-history.ts, smoke.ts (checks a running site)
 tests/fixtures/          real API responses used by tests
 migrations/              D1 SQL migrations (Phase 4)
 docs/                    brief, roadmap, data sources, this file, backlog

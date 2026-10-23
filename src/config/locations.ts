@@ -16,6 +16,8 @@ export interface ObservationStation {
   lat: number;
   lon: number;
   elevationM: number;
+  /** JMA past-weather-data (過去の気象データ) page identifiers, for the season history. */
+  pastData: { precNo: string; blockNo: string };
 }
 
 export type ForecastPointId = 'summit' | 'mid' | 'base';
@@ -52,6 +54,8 @@ export const LOCATIONS = {
       lat: 42.9,
       lon: 140.7567,
       elevationM: 176,
+      // Kutchan is a full weather station there ("s" pages), block 47433 in Shiribeshi (16).
+      pastData: { precNo: '16', blockNo: '47433' },
     },
     forecastPoints: [
       // Mt. Niseko Annupuri summit (1,308 m). The DEM smooths the peak to ~1,250 m,

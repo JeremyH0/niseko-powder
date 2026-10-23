@@ -1,0 +1,98 @@
+---
+import { createTranslator, DEFAULT_LOCALE, type Locale } from '../../i18n/index.ts';
+import { SEASON_CHART, seasonChartModel } from './chart.ts';
+import type { SeasonData } from './load.ts';
+import { seasonStrings } from './strings.ts';
+import type { SeasonSummary } from './summary.ts';
+
+interface Props {
+  data: SeasonData;
+  summary: SeasonSummary;
+  /** Compact = homepage teaser (no axes text, no legend). */
+  compact?: boolean;
+  labelledBy?: string;
+  locale?: Locale;
+}
+const { data, summary, compact = false, labelledBy, locale = DEFAULT_LOCALE } = Astro.props;
+const t = createTranslator(seasonStrings, locale);
+const focus = summary.focus ? (data.seasons[summary.focus]?.depth ?? null) : null;
+const compare = !compact && summary.compare ? (data.seasons[summary.compare]?.depth ?? null) : null;
+const m = seasonChartModel({
+  focus,
+  compare,
+  average: summary.avgDepth,
+  range: compact ? [] : summary.range,
+  season: summary.focus ?? summary.current,
+  today: summary.inSeason ? data.today : null,
+});
+const { width, height, left, top, bottom } = SEASON_CHART;
+---
+
+<figure class="m-0">
+  <div class:list={[!compact && '-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0']}>
+  <svg viewBox={`0 0 ${width} ${height}`} class:list={['block w-full', !compact && 'min-w-[560px]']} role="img" aria-labelledby={labelledBy}>
+    {
+      !compact &&
+        m.yTicks.map((tk) => (
+          <g>
+            <line x1={left} x2={width} y1={tk.y} y2={tk.y} stroke="currentColor" opacity="0.08" />
+            <text x={left - 6} y={tk.y + 4} text-anchor="end" font-size="12" fill="currentColor" opacity="0.6">
+              {tk.value}
+            </text>
+          </g>
+        ))
+    }
+    {m.rangePath && <path d={m.rangePath} fill="var(--snow)" opacity="0.1" />}
+    <path d={m.averagePath} fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.55" />
+    {m.comparePath && <path d={m.comparePath} fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.35" />}
+    {m.focusArea && <path d={m.focusArea} fill="var(--snow)" opacity="0.18" />}
+    {m.focusPath && <path d={m.focusPath} fill="none" stroke="var(--snow)" stroke-width="3" stroke-linejoin="round" />}
+    {
+      m.todayX !== null && (
+        <line x1={m.todayX} x2={m.todayX} y1={top} y2={height - bottom} stroke="var(--rain)" stroke-dasharray="3 4" />
+      )
+    }
+    {
+      m.monthTicks.map((tk) => (
+        <text x={tk.x} y={height - 8} font-size={compact ? '20' : '13'} fill="currentColor" opacity="0.7">
+          {tk.label}
+        </text>
+      ))
+    }
+  </svg>
+  </div>
+  {
+    !compact && (
+      <figcaption>
+        <ul class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-muted">
+          {summary.focus && (
+            <li class="flex items-center gap-2">
+              <span class="inline-block h-1 w-5 rounded bg-snow" />
+              {t('legend.focus', { season: summary.focus })}
+            </li>
+          )}
+          {summary.compare && (
+            <li class="flex items-center gap-2">
+              <span class="inline-block h-0.5 w-5 bg-ink/40" />
+              {t('legend.compare', { season: summary.compare })}
+            </li>
+          )}
+          <li class="flex items-center gap-2">
+            <span class="inline-block w-5 border-t-2 border-dashed border-ink/50" />
+            {t('legend.average', { n: summary.reference.length })}
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="inline-block h-3 w-5 rounded-sm bg-snow/15" />
+            {t('legend.range')}
+          </li>
+          {m.todayX !== null && (
+            <li class="flex items-center gap-2">
+              <span class="inline-block h-3 w-0 border-l-2 border-dashed border-rain" />
+              {t('legend.today')}
+            </li>
+          )}
+        </ul>
+      </figcaption>
+    )
+  }
+</figure>

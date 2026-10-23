@@ -61,6 +61,18 @@ measured yet this season. Treat any non-zero flag as "unreliable / show as —" 
 otherwise, and log unknown flags.
 
 ### Historical data (for the season-comparison chart)
+
+**Verified 2026-10-23 (Phase 4):** Kutchan is a full weather station on the past-data site:
+`prec_no=16` (後志 Shiribeshi), `block_no=47433`, 176.1 m. Daily page:
+`https://www.data.jma.go.jp/stats/etrn/view/daily_s1.php?prec_no=16&block_no=47433&year=YYYY&month=M&day=&view=`
+— an HTML table (no API). We read 降雪 合計 (kōsetsu gōkei, "snowfall total", cm) and 最深積雪
+(saishin sekisetsu, "deepest snow cover", cm), the last two numeric columns before 天気概況 (tenki
+gaikyō, "weather summary"). `--` = 現象なし (genshō nashi, "no phenomenon") → 0; quality marks
+`)` / `]` kept, `×` / `///` / `#` → missing. A few days per decade are missing (e.g. 2025-26 has
+one). No robots.txt rules. Seed: 70 requests at 1 per 1.5 s; live job: 1–2 requests a day.
+Fallback to Open-Meteo's archive was not needed.
+
+Original plan:
 The real-time JSON only covers recent days. For previous seasons use JMA's past-weather-data pages:
 過去の気象データ検索 (kako no kishō dēta kensaku, "past weather data search"), daily values for
 Kutchan. Plan (Phase 4): write a one-off script that pulls daily snow depth for the last ~5–10

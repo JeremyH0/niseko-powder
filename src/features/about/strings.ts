@@ -15,6 +15,8 @@ export const aboutStrings = defineMessages({
     'sources.om':
       'Forecast: Open-Meteo, using JMA’s own high-resolution models (MSM 5 km, then GSM) for snow, temperature and wind, and Open-Meteo’s best-match models for gusts and freezing level. We ask for three points on the mountain:',
     'sources.point': '{label}: {lat}, {lon} at {elevation} m',
+    'sources.history':
+      'Season tracker: daily snowfall and snow depth from JMA’s past weather data for the same Kutchan station (block {block}), back to the 2016-17 winter. The current season is read again every morning.',
     'sources.refresh':
       'A Cloudflare Worker fetches both sources once an hour and stores the result. Your visit never calls JMA or Open-Meteo directly. If a source is down we keep showing the last good data and say how old it is.',
 
