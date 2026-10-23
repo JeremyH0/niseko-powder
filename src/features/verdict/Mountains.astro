@@ -1,67 +1,74 @@
 ---
 /**
- * Yōtei (right) and the Annupuri range (left) as layered ridges with drifting valley fog.
- * Snowcaps appear when the summit has snow. The near ridge is painted in the page colour
- * so the hero melts into the content below.
+ * The hero landscape: far hills, Yōtei, the Annupuri range, valley fog, a fir forest edge and
+ * the near snowfield (painted in the page colour so the hero melts into the content).
+ * Geometry comes from landscape.ts; colours from the sky tokens, so the scene follows the
+ * time of day and the weather.
  */
+import { landscape, type Light, type Snowline } from './landscape.ts';
+
 interface Props {
-  snowcap: boolean;
+  snowline: Snowline;
+  light: Light;
   annupuriLabel: string;
   yoteiLabel: string;
 }
-const { snowcap, annupuriLabel, yoteiLabel } = Astro.props;
+const { snowline, light, annupuriLabel, yoteiLabel } = Astro.props;
+const l = landscape({ snowline, light });
+const [ax, ay] = l.range.summit;
+const [yx, yy] = l.yotei.summit;
 ---
 
 <div class="pointer-events-none absolute inset-x-0 bottom-0" aria-hidden="true">
-  <svg viewBox="0 0 1200 300" preserveAspectRatio="xMidYMax slice" class="block h-[clamp(170px,26vw,380px)] w-full">
+  <svg viewBox="0 0 1200 320" preserveAspectRatio="xMidYMax slice" class="block h-[clamp(160px,28vw,420px)] w-full">
     <defs>
-      <linearGradient id="fog" x1="0" y1="0" x2="0" y2="1">
+      <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="var(--fog)" stop-opacity="0"></stop>
-        <stop offset="0.6" stop-color="var(--fog)"></stop>
+        <stop offset="0.65" stop-color="var(--fog)"></stop>
         <stop offset="1" stop-color="var(--fog)" stop-opacity="0"></stop>
       </linearGradient>
-      <linearGradient id="far" x1="0" y1="0" x2="0" y2="1">
+      <linearGradient id="yotei-fill" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="var(--ridge-far)"></stop>
-        <stop offset="1" stop-color="var(--ridge-far)" stop-opacity="0.55"></stop>
+        <stop offset="1" stop-color="var(--distant)"></stop>
+      </linearGradient>
+      <linearGradient id="range-fill" x1="0" y1="0.15" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--ridge-mid)"></stop>
+        <stop offset="1" stop-color="var(--ridge-near)"></stop>
+      </linearGradient>
+      <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#040b1c" stop-opacity="0.3"></stop>
+        <stop offset="1" stop-color="#040b1c" stop-opacity="0.06"></stop>
+      </linearGradient>
+      <linearGradient id="snow-fill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--cap)"></stop>
+        <stop offset="1" stop-color="var(--cap)" stop-opacity="0.82"></stop>
       </linearGradient>
     </defs>
-    <!-- Yōtei: the near-perfect volcanic cone across the valley -->
-    <path d="M640 300 C760 250 850 120 905 78 Q930 64 955 78 C1010 120 1100 250 1220 300 Z" fill="url(#far)"></path>
-    {
-      snowcap && (
-        <path
-          d="M862 116 C880 98 894 86 905 78 Q930 64 955 78 C966 86 980 98 998 116 L980 123 L962 109 L947 126 L930 107 L913 127 L897 111 L880 124 Z"
-          fill="var(--cap)"
-          opacity="0.9"
-        />
-      )
-    }
-    <text x="944" y="50" text-anchor="end" font-size="20" fill="#fff" opacity="0.72" font-family="system-ui, sans-serif">{yoteiLabel}</text>
 
-    <!-- Labels are anchored inward so phones (which crop the sides) never cut them. -->
+    <!-- Far horizon -->
+    <path d={l.distant} fill="var(--distant)" opacity="0.7"></path>
+
+    <!-- Yōtei, hazed by distance -->
+    <path d={l.yotei.body} fill="url(#yotei-fill)"></path>
+    {l.yotei.snow && <path d={l.yotei.snow} fill="url(#snow-fill)" opacity="0.92"></path>}
+    <path d={l.yotei.shadow} fill="url(#shade)" opacity="0.75"></path>
+    <text x={yx - 24} y={yy - 12} text-anchor="end" font-size="19" fill="#fff" opacity="0.72" font-family="system-ui, sans-serif">{yoteiLabel}</text>
+
     <!-- Valley fog between the volcano and the range -->
-    <rect class="fog" x="-60" y="150" width="1320" height="90" fill="url(#fog)"></rect>
+    <rect class="fog" x="-60" y="168" width="1320" height="96" fill="url(#haze)"></rect>
 
     <!-- Niseko Annupuri range -->
-    <path
-      d="M-20 300 L-20 190 C60 172 120 142 190 122 C232 109 262 96 300 92 C332 89 352 100 382 113 C430 132 474 122 522 142 C580 166 640 200 700 230 C760 256 820 280 900 300 Z"
-      fill="var(--ridge-mid)"></path>
-    {
-      snowcap && (
-        <path
-          d="M222 112 C250 101 272 93 300 92 C328 90 348 100 380 113 L360 120 L342 108 L325 122 L306 106 L288 121 L268 109 L247 120 Z"
-          fill="var(--cap)"
-        />
-      )
-    }
-    <text x="262" y="74" text-anchor="start" font-size="20" fill="#fff" opacity="0.75" font-family="system-ui, sans-serif">{annupuriLabel}</text>
+    <path d={l.range.body} fill="url(#range-fill)"></path>
+    {l.range.snow && <path d={l.range.snow} fill="url(#snow-fill)"></path>}
+    <path d={l.range.shadow} fill="url(#shade)"></path>
+    <text x={ax - 34} y={ay - 14} text-anchor="start" font-size="19" fill="#fff" opacity="0.78" font-family="system-ui, sans-serif">{annupuriLabel}</text>
 
-    <!-- Low fog over the near ridge -->
-    <rect class="fog" style="animation-delay:-9s" x="-60" y="215" width="1320" height="60" fill="url(#fog)" opacity="0.8"></rect>
+    <!-- Low fog, then the fir forest edge -->
+    <rect class="fog" style="animation-delay:-9s" x="-60" y="226" width="1320" height="56" fill="url(#haze)" opacity="0.85"></rect>
+    <path d={l.forest.ground} fill="var(--ridge-near)"></path>
+    <path d={l.forest.trees} fill="var(--ridge-near)"></path>
 
-    <!-- Near ridge in the page colour -->
-    <path
-      d="M-20 300 L-20 252 C120 232 260 264 420 250 C580 238 700 264 860 257 C1000 251 1100 267 1220 254 L1220 300 Z"
-      fill="var(--paper)"></path>
+    <!-- Near snowfield in the page colour -->
+    <path d={l.front} fill="var(--paper)"></path>
   </svg>
 </div>

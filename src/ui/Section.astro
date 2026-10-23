@@ -15,7 +15,7 @@ const { id, title, badge, intro, eyebrow, class: className } = Astro.props;
 <section id={id} aria-labelledby={`${id}-title`} class:list={['min-w-0 scroll-mt-6', className]}>
   <div class="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
     {eyebrow && <span class="tabular text-sm font-semibold text-accent" aria-hidden="true">{eyebrow}</span>}
-    <h2 id={`${id}-title`} class="font-display text-[1.75rem] leading-tight font-semibold tracking-tight sm:text-4xl">{title}</h2>
+    <h2 id={`${id}-title`} class="font-display text-[2.1rem] leading-[1.05] font-normal sm:text-5xl">{title}</h2>
     {
       badge && (
         <span class="glass rounded-full px-2.5 py-0.5 text-xs font-medium text-ink-muted">

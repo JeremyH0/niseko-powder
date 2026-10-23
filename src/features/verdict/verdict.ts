@@ -34,6 +34,10 @@ export interface HeroModel {
   sunset: string;
   weather: WeatherState;
   snowcap: boolean;
+  /** How far down the mountains are white: peaks only early season, everything in winter. */
+  snowline: 'none' | 'peaks' | 'full';
+  /** Side the low sun lights the ridges from (shadows fall the other way). */
+  light: 'left' | 'right';
 }
 
 const point = (c: Conditions | null, id: string) => findPoint(c, id);
@@ -81,7 +85,11 @@ export function heroModel(c: Conditions | null, now: Date): HeroModel {
   // Early season: show a cap once the summit has had snow and it's cold enough up there to stay.
   const snowcap = !preSeason || summitFresh >= 1 || (summitTodayMin !== null && summitTodayMin <= 0);
   const next = p?.nextBigSnow ?? null;
+  const snowline: HeroModel['snowline'] = !snowcap ? 'none' : preSeason ? 'peaks' : 'full';
+  const light: HeroModel['light'] = sky === 'dusk' || sky === 'night' ? 'right' : 'left';
   const base = {
+    snowline,
+    light,
     sky,
     sunrise: sun.sunrise.toISOString(),
     sunset: sun.sunset.toISOString(),

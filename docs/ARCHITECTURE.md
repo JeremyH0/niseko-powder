@@ -8,6 +8,8 @@ in the same commit as any structural change.
   `@astrojs/cloudflare` 14. Static files (CSS, fonts, images) are served by **Workers Static
   Assets**, which are free and don't count as Worker requests.
 - **Tailwind CSS v4** through `@tailwindcss/vite`, tokens in `src/ui/global.css`.
+- Type: **Instrument Serif** (display, self-hosted, 21 KB, one weight — `font-synthesis: none`)
+  + the system sans for text and numbers.
 - **GSAP** arrives in Phase 3 (not installed yet).
 - **Cron Trigger** (hourly) on the same Worker → **KV** (`CONDITIONS`) for the latest data,
   **D1** (`HISTORY_DB`) for daily history (Phase 4).
@@ -39,7 +41,8 @@ src/
   ui/                    tokens + glass + motion (global.css), SiteNav, Section, StatTile, Icon,
                          ChartFrame + chart-interact.ts (hover/touch/keyboard read-out for every chart)
   features/
-    verdict/             hero: frosted verdict, headline, score ring, powder stake, reasons, sky, mountains
+    verdict/             hero: frosted verdict, headline, score ring, powder stake, reasons, sky;
+                         landscape.ts generates the mountains (seeded noise, shading, data-driven snowline)
     snowfall/            live canvas (client script) + intensity maths
     outlook/             at-a-glance tiles (fresh / next 24 h / next big snow / town now)
     forecast/            48-hour SVG chart + 7-day list
