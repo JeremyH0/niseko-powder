@@ -65,7 +65,8 @@ const clock = new Intl.DateTimeFormat('en-GB', {
 
 <script>
   const el = document.querySelector<HTMLElement>('[data-clock]');
-  if (el && el.offsetParent !== null) {
+  // Only tick where the clock is shown (lg+); a media query avoids forcing a layout.
+  if (el && matchMedia('(min-width: 64rem)').matches) {
     const f = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
     const tick = () => {
       if (!document.hidden) el.textContent = f.format(new Date());
