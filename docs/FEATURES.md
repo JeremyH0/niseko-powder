@@ -48,6 +48,12 @@ Living list. Add ideas freely; build them one at a time with the "Add a feature"
 _(none yet)_
 
 ## Shipped
+- 2026-10-28 — **Editorial redesign "The Daily Powder Report"**: Instrument Serif (roman +
+  italic) / Geist / Geist Mono type system, masthead with season day or countdown, live JST
+  clock, ruled instrument panel with scored reasons, **live ticker band**, hairline grids,
+  index-style links, giant wordmark footer, scroll-driven mountain parallax and title wipes.
+  Fixed: the hero sky went blank on snowy, rainy or cloudy days (CSS variable cycle), now
+  guarded by a test.
 - 2026-10-23 — **Responsive pass**: desktop bento dashboard, split hero (xl), sticky today bar,
   container-query grids (no orphans on tablet), 44px touch targets, prerender on intent, OS text scale.
 - 2026-10-23 — **Redesign "Niseko night powder"**: frosted verdict, powder stake (ankle / boot /

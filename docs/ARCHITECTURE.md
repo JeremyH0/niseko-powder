@@ -109,6 +109,15 @@ Key properties:
   (verdict | today panel) from `xl`. Touch targets ≥ 44px (`tap` utility). A sticky "today" bar
   appears after the hero. Speculation Rules prerender internal pages on hover/touch (Chromium;
   ignored elsewhere). `<meta name="text-scale">` + rem-based type respect OS text size.
+- Design system ("The Daily Powder Report", `src/ui/global.css`): Instrument Serif for answers,
+  titles and big numbers (`numeral`), Geist for reading, Geist Mono for labels (`label`).
+  Surfaces are flat: `panel` (paper + hairline) and `ruled` (grid whose 1px gaps draw the
+  lines); blur only on the hero's instrument panel and the sticky bar. Inner pages use
+  `PageHeader`; sections use `Section` (rule, mono meta line, serif title). Motion is CSS:
+  hero parallax and exit on a named `view-timeline` (`--hero`), `title-in` wipes, the ticker
+  marquee; all behind `prefers-reduced-motion: no-preference` (+ `@supports` for scroll-driven).
+  Sky colours are two-layered: time of day sets `--p-*`, weather mixes them into `--sky-*`.
+  Never let a custom property read its own value: `global-css.test.ts` fails on cycles.
 - Charts follow the dataviz rules: one axis per panel (small multiples, never dual-axis), ≤ 24px
   bars with a 4px rounded data-end, solid hairline grids, legend + selective direct labels,
   hover/keyboard tooltip, and a table view. Series colours validated for colour blindness.
