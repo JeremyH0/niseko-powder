@@ -7,6 +7,7 @@ export const seasonStrings = defineMessages({
       'Niseko snow season tracker: snow depth and snowfall in Kutchan this season versus the last ten winters, from Japan Meteorological Agency records.',
     back: '← Today’s answer',
     badge: 'Kutchan town · 176 m',
+    kicker: 'Season tracker',
     intro:
       'Snow on the ground in Kutchan, day by day, against the last ten winters. The mountain gets far more — but the town record is the longest honest one we have.',
 

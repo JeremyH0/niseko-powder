@@ -29,7 +29,7 @@ const dir = v(obs?.windDirDeg);
 <Section id="right-now" title={t('title')} badge={t('badge')} intro={t('intro')} eyebrow="04">
   {
     stale && (
-      <p role="status" class="mb-4 flex items-start gap-2 rounded-2xl bg-warn-bg px-4 py-3 text-sm font-medium text-warn-ink">
+      <p role="status" class="mb-4 flex items-start gap-2 rounded-xl bg-warn-bg px-4 py-3 text-sm font-medium text-warn-ink">
         <Icon name="warning" size={18} class="mt-0.5 shrink-0" />
         {t('stale', { age: formatAge(age) })}
       </p>
@@ -38,7 +38,7 @@ const dir = v(obs?.windDirDeg);
   {
     obs ? (
       <>
-        <dl class="tiles-5">
+        <dl class="tiles-5 ruled">
           <StatTile
             label={t('depth.label')}
             value={snowMeasured ? formatCm(v(obs.snowDepthCm)) : '—'}
@@ -73,7 +73,7 @@ const dir = v(obs?.windDirDeg);
             note={dir !== null ? t('wind.from', { dir: compass(dir) }) : undefined}
           >
             {dir !== null && (
-              <svg viewBox="0 0 40 40" width="36" height="36" class="ml-auto self-center" aria-hidden="true">
+              <svg viewBox="0 0 40 40" width="36" height="36" class="mb-1 ml-auto self-end" aria-hidden="true">
                 <circle cx="20" cy="20" r="17" fill="none" stroke="var(--line)" stroke-width="2" />
                 <text x="20" y="9" text-anchor="middle" font-size="7" font-weight="700" class="fill-ink-muted">N</text>
                 {/* Arrow points where the wind blows TO (from + 180°). */}
@@ -91,12 +91,12 @@ const dir = v(obs?.windDirDeg);
             note={t('precip.note', { h1: formatNumber(v(obs.precip1hMm), 1) })}
           />
         </dl>
-        <p class="num mt-3 text-xs text-ink-muted">
+        <p class="mt-3 text-xs text-ink-muted">
           {t('observed', { time: formatClock(obs.observedAt), age: formatAge(age), id: obs.stationId })}
         </p>
       </>
     ) : (
-      <p class="glass rounded-2xl p-4 text-ink-muted">{t('none')}</p>
+      <p class="panel rounded-xl p-4 text-ink-muted">{t('none')}</p>
     )
   }
 </Section>

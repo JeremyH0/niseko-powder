@@ -1,5 +1,6 @@
 ---
 import '../ui/global.css';
+import { getLocation } from '../config/locations.ts';
 import { attributions, site } from '../config/site.ts';
 import { common } from '../i18n/common.ts';
 import { createTranslator, DEFAULT_LOCALE, type Locale } from '../i18n/index.ts';
@@ -15,6 +16,7 @@ interface Props {
 const { title, description, locale = DEFAULT_LOCALE, themeColor = '#0a1533' } = Astro.props;
 const t = createTranslator(common, locale);
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
+const station = getLocation().station;
 ---
 
 <!doctype html>
@@ -60,35 +62,45 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
       >{t('a11y.skip')}</a
     >
     <slot />
-    <footer class="mt-auto border-t border-line">
-      <div class="mx-auto grid max-w-5xl gap-6 px-4 py-10 text-sm text-ink-muted sm:grid-cols-[1.4fr_1fr] sm:px-6">
-        <div>
-          <p class="font-display text-2xl font-normal text-ink">{site.name}</p>
-          <p class="mt-1 max-w-md">{t('footer.about')}</p>
-          <p class="mt-3">{t('footer.nonCommercial')}</p>
-          <p class="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-            <a class="tap font-medium text-ink underline" href="/season">{t('footer.season')}</a>
-            <a class="tap font-medium text-ink underline" href="/about">{t('footer.methodology')}</a>
-            <a class="tap font-medium text-ink underline" href="/api/conditions.json">{t('footer.api')}</a>
-          </p>
+    <footer class="relative isolate mt-auto overflow-hidden bg-band text-band-ink">
+      <div class="mx-auto max-w-[90rem] px-4 pt-16 sm:px-6 sm:pt-24 lg:px-10">
+        <div class="grid gap-12 border-t border-current/30 pt-4 md:grid-cols-12 md:gap-8">
+          <div class="md:col-span-5">
+            <p class="label opacity-70">{site.name}</p>
+            <p class="mt-6 max-w-md font-display text-[clamp(1.9rem,1.4rem+1.6vw,2.75rem)] leading-[1.05]">{t('footer.about')}</p>
+            <p class="mt-5 max-w-sm text-sm opacity-75">{t('footer.nonCommercial')}</p>
+          </div>
+          <nav aria-label={t('footer.index')} class="md:col-span-3 md:col-start-7">
+            <p class="label opacity-70">{t('footer.index')}</p>
+            <ul class="mt-4 text-[0.95rem]">
+              <li><a class="tap" href="/season"><span class="link-draw">{t('footer.season')}</span></a></li>
+              <li><a class="tap" href="/about"><span class="link-draw">{t('footer.methodology')}</span></a></li>
+              <li><a class="tap" href="/api/conditions.json"><span class="link-draw">{t('footer.api')}</span></a></li>
+              <li><a class="tap" href="#top"><span class="link-draw">{t('footer.top')} ↑</span></a></li>
+            </ul>
+          </nav>
+          <div class="md:col-span-3">
+            <p class="label opacity-70">{t('footer.credits')}</p>
+            <ul class="mt-4 text-[0.95rem]">
+              {
+                attributions.map((a) => (
+                  <li>
+                    <a class="tap" href={a.href} rel="noopener">
+                      <span class="link-draw">{a.text}</span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+            <p class="mt-4 text-sm leading-relaxed opacity-75">{t('footer.disclaimer')}</p>
+          </div>
         </div>
-        <div>
-          <p class="font-medium text-ink">{t('footer.credits')}</p>
-          <ul class="mt-1">
-            {
-              attributions.map((a) => (
-                <li>
-                  <a class="tap underline" href={a.href} rel="noopener">
-                    {a.text}
-                  </a>
-                </li>
-              ))
-            }
-          </ul>
-          <p class="mt-3">{t('footer.disclaimer')}</p>
-          <p class="mt-3">{t('footer.madeIn')}</p>
-        </div>
+        <p class="label mt-16 flex flex-wrap justify-between gap-x-6 gap-y-1 opacity-70">
+          <span>{t('footer.madeIn')}</span>
+          <span>{t('footer.coords', { lat: station.lat.toFixed(2), lon: station.lon.toFixed(2) })}</span>
+        </p>
       </div>
+      <p class="wordmark mt-6 -mb-[0.16em] px-[1.5vw] select-none" aria-hidden="true">{site.name}</p>
     </footer>
   </body>
 </html>

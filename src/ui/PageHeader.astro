@@ -1,0 +1,36 @@
+---
+/**
+ * Masthead for inner pages: navigation, a heavy rule with a mono meta line, then the page
+ * title as large as the homepage verdict's little sibling. Keeps every page in one system.
+ */
+import SiteNav from './SiteNav.astro';
+
+interface Props {
+  title: string;
+  current?: 'home' | 'season' | 'about';
+  /** Left of the meta line, e.g. "Methodology". */
+  kicker?: string;
+  /** Right of the meta line, e.g. "Kutchan town · 176 m". */
+  meta?: string;
+  lead?: string;
+}
+const { title, current, kicker, meta, lead } = Astro.props;
+---
+
+<header class="mx-auto w-full max-w-[90rem] px-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 lg:px-10">
+  <SiteNav current={current} />
+  <div class="mt-12 border-t border-rule pt-3 sm:mt-20">
+    {
+      (kicker || meta) && (
+        <p class="label flex flex-wrap justify-between gap-x-4 gap-y-1 text-ink-muted">
+          <span>{kicker}</span>
+          <span>{meta}</span>
+        </p>
+      )
+    }
+    <h1 class="mt-6 font-display text-[clamp(3.5rem,1.8rem+7.5vw,9.5rem)] leading-[0.86] font-normal tracking-[-0.03em] text-balance">
+      {title}
+    </h1>
+    {lead && <p class="mt-6 max-w-2xl text-lg leading-snug text-ink-muted sm:text-xl">{lead}</p>}
+  </div>
+</header>

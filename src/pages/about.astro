@@ -7,7 +7,7 @@ import { aboutStrings } from '../features/about/strings.ts';
 import { createTranslator } from '../i18n/index.ts';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../ui/Section.astro';
-import SiteNav from '../ui/SiteNav.astro';
+import PageHeader from '../ui/PageHeader.astro';
 
 export const prerender = true;
 
@@ -15,21 +15,34 @@ const t = createTranslator(aboutStrings);
 const location = getLocation();
 const s = location.station;
 const pts = (n: number) => (n > 0 ? `+${n}` : `−${Math.abs(n)}`);
+const toc = (['sources', 'score', 'limits', 'privacy'] as const).map((id) => ({ id, title: t(`${id}.title`) }));
 ---
 
 <BaseLayout title={`${t('title')} · ${site.name}`} description={t('description')}>
-  <header class="mx-auto w-full max-w-6xl px-4 pt-4 sm:px-6"><SiteNav current="about" /></header>
-  <main id="main" class="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
-    <h1 class="font-display text-6xl leading-none font-normal">{t('title')}</h1>
-    <p class="mt-4 text-xl leading-snug text-ink-muted">{t('lead')}</p>
+  <PageHeader current="about" title={t('title')} kicker={t('kicker')} meta={site.name} lead={t('lead')} />
+  <main id="main" class="mx-auto w-full max-w-[90rem] px-4 py-14 sm:px-6 sm:py-20 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,46rem)_minmax(0,1fr)] lg:gap-16 lg:px-10">
+    <nav aria-label={t('toc')} class="hidden lg:block">
+      <ol class="label sticky top-8 space-y-3 text-ink-muted">
+        {
+          toc.map((s, i) => (
+            <li>
+              <a class="tap gap-3 hover:text-ink" href={`#${s.id}`}>
+                <span>{String(i + 1).padStart(2, '0')}</span>
+                {s.title}
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
 
-    <div class="mt-12 flex flex-col gap-12 leading-relaxed">
-      <Section id="sources" title={t('sources.title')}>
+    <div class="flex min-w-0 flex-col gap-16 text-[1.0625rem] leading-relaxed">
+      <Section id="sources" title={t('sources.title')} eyebrow="01">
         <div class="space-y-4">
           <p>{t('sources.jma', { name: `${s.nameJa} (${s.nameEn})`, id: s.id, elevation: s.elevationM })}</p>
-          <p class="rounded-2xl bg-warn-bg px-4 py-3 text-warn-ink">{t('sources.jmaCaveat')}</p>
+          <p class="rounded-xl bg-warn-bg px-4 py-3 text-warn-ink">{t('sources.jmaCaveat')}</p>
           <p>{t('sources.om')}</p>
-          <ul class="num list-disc space-y-1 pl-6">
+          <ul class="list-disc space-y-1 pl-6 font-mono text-sm">
             {
               location.forecastPoints.map((p) => (
                 <li>{t('sources.point', { label: p.label, lat: p.lat, lon: p.lon, elevation: p.elevationM })}</li>
@@ -41,7 +54,7 @@ const pts = (n: number) => (n > 0 ? `+${n}` : `−${Math.abs(n)}`);
         </div>
       </Section>
 
-      <Section id="score" title={t('score.title')}>
+      <Section id="score" title={t('score.title')} eyebrow="02">
         <p>{t('score.intro')}</p>
         <ul class="mt-4 list-disc space-y-2 pl-6">
           <li>{t('score.fresh')}</li>
@@ -65,7 +78,7 @@ const pts = (n: number) => (n > 0 ? `+${n}` : `−${Math.abs(n)}`);
         <p class="mt-2 text-ink-muted">{t('score.tune')}</p>
       </Section>
 
-      <Section id="limits" title={t('limits.title')}>
+      <Section id="limits" title={t('limits.title')} eyebrow="03">
         <ul class="list-disc space-y-2 pl-6">
           <li>{t('limits.1')}</li>
           <li>{t('limits.2')}</li>
@@ -73,7 +86,7 @@ const pts = (n: number) => (n > 0 ? `+${n}` : `−${Math.abs(n)}`);
         </ul>
       </Section>
 
-      <Section id="privacy" title={t('privacy.title')}>
+      <Section id="privacy" title={t('privacy.title')} eyebrow="04">
         <p>{t('privacy.text')}</p>
       </Section>
     </div>

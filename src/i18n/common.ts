@@ -10,6 +10,7 @@ export const common = defineMessages({
     'nav.label': 'Site',
     'nav.season': 'Season',
     'nav.about': 'How it works',
+    'nav.clock': 'Kutchan',
     'footer.about': 'A daily, honest answer to the only question that matters in a Niseko winter.',
     'footer.credits': 'Data credits',
     'footer.nonCommercial': 'Free and non-commercial. No ads, no cookies, no tracking.',
@@ -19,6 +20,9 @@ export const common = defineMessages({
     'footer.disclaimer':
       'Not an official forecast. Town readings are from Kutchan (176 m), not the mountain. Check official lift and avalanche information before you go.',
     'footer.madeIn': 'Made in Kutchan, Hokkaido.',
+    'footer.index': 'Index',
+    'footer.top': 'Back to top',
+    'footer.coords': 'Kutchan station · {lat}° N · {lon}° E',
     'time.lastUpdated': 'Last updated {time} JST',
   },
 });

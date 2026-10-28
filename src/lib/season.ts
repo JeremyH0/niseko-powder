@@ -56,6 +56,19 @@ export function dateAt(season: string, index: number): string {
   return new Date(Date.parse(`${seasonStart(season)}T00:00:00Z`) + index * DAY_MS).toISOString().slice(0, 10);
 }
 
+/** Where a JST date sits in the ski calendar: day N of the season, or days until it opens. */
+export type SeasonDay = { kind: 'day'; season: string; day: number; of: number } | { kind: 'opens'; season: string; inDays: number };
+
+export function seasonDay(date: string): SeasonDay {
+  const season = seasonOf(date);
+  if (season) {
+    const of = dayIndex(season, `${seasonStartYear(season) + 1}-05-31`) + 1;
+    return { kind: 'day', season, day: dayIndex(season, date) + 1, of };
+  }
+  const next = currentOrNextSeason(date);
+  return { kind: 'opens', season: next, inDays: -dayIndex(next, date) };
+}
+
 /** The (year, month) pairs to fetch for a season. */
 export function seasonMonths(season: string): { year: number; month: number }[] {
   const y = seasonStartYear(season);

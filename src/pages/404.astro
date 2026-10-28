@@ -18,11 +18,13 @@ const t = createTranslator(
 ---
 
 <BaseLayout title={`${t('title')} · ${site.name}`} description={t('text')}>
-  <header class="mx-auto w-full max-w-6xl px-4 pt-4 sm:px-6"><SiteNav /></header>
-  <main id="main" class="mx-auto flex w-full max-w-xl flex-1 flex-col items-start justify-center px-4 py-24">
-    <p class="font-display text-8xl leading-none font-normal">404</p>
-    <h1 class="mt-4 font-display text-4xl font-normal">{t('title')}</h1>
-    <p class="mt-2 text-ink-muted">{t('text')}</p>
-    <a href="/" class="mt-6 rounded-full bg-ink px-5 py-3 font-semibold text-paper">{t('home')}</a>
+  <header class="mx-auto w-full max-w-[90rem] px-4 pt-4 sm:px-6 lg:px-10"><SiteNav /></header>
+  <main id="main" class="mx-auto flex w-full max-w-[90rem] flex-1 flex-col justify-center px-4 py-20 sm:px-6 lg:px-10">
+    <p class="font-display text-[clamp(8rem,4rem+22vw,22rem)] leading-[0.8] tracking-[-0.04em]" aria-hidden="true">404</p>
+    <div class="mt-8 border-t border-rule pt-4">
+      <h1 class="font-display text-[clamp(2.25rem,1.6rem+2.6vw,4rem)] leading-none font-normal">{t('title')}</h1>
+      <p class="mt-3 text-ink-muted">{t('text')}</p>
+      <a href="/" class="label tap mt-6 rounded-full bg-ink px-5 text-paper">{t('home')}</a>
+    </div>
   </main>
 </BaseLayout>

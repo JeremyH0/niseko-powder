@@ -37,14 +37,14 @@ const rows: ChartRow[] = (m?.hours ?? []).map((h) => ({
     ['var(--neutral-series-2)', formatTemp(h.tempC), t('h48.tip.temp')],
   ],
 }));
-const panelTitle = 'font-size:12px;font-weight:600;fill:currentColor';
+const panelTitle = 'font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;fill:currentColor';
 ---
 
 {
   m && (
     <Section id="next-48h" title={t('h48.title')} badge={t('h48.badge')} eyebrow="01">
-      <div class="glass reveal rounded-3xl p-4 sm:p-6">
-        <p id="next-48h-summary" class="max-w-2xl text-lg leading-snug text-pretty">
+      <div class="panel reveal rounded-2xl p-4 sm:p-6">
+        <p id="next-48h-summary" class="max-w-2xl font-display text-[clamp(1.4rem,1.2rem+0.8vw,1.85rem)] leading-[1.15] text-pretty">
           {summary}
         </p>
 
@@ -59,7 +59,7 @@ const panelTitle = 'font-size:12px;font-weight:600;fill:currentColor';
             hint={t('chart.hint')}
             class="min-w-[560px]"
           >
-            <svg viewBox={`0 0 ${width} ${height}`} class="block w-full text-ink-muted" aria-hidden="true">
+            <svg viewBox={`0 0 ${width} ${height}`} class="block w-full font-mono text-ink-muted" aria-hidden="true">
               {m.nightBands.map((b) => (
                 <rect x={b.x} y={snow.top - 8} width={b.w} height={temp.top + temp.h - snow.top + 8} fill="currentColor" opacity="0.06" />
               ))}
@@ -137,7 +137,7 @@ const panelTitle = 'font-size:12px;font-weight:600;fill:currentColor';
           </ChartFrame>
         </div>
 
-        <ul class="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-ink-muted">
+        <ul class="label mt-4 flex flex-wrap gap-x-5 gap-y-2 text-ink-muted">
           <li class="flex items-center gap-2">
             <span class="inline-block h-3 w-3 rounded-[3px] bg-snow" />
             {t('h48.legend.snow')}
@@ -157,7 +157,7 @@ const panelTitle = 'font-size:12px;font-weight:600;fill:currentColor';
         </ul>
 
         <details class="mt-4 text-sm">
-          <summary class="tap cursor-pointer font-medium text-accent">{t('h48.table')}</summary>
+          <summary class="label tap cursor-pointer text-accent">{t('h48.table')}</summary>
           <div class="mt-3 max-h-80 overflow-auto">
             <table class="w-full text-left">
               <thead class="sticky top-0 bg-card-solid text-ink-muted">

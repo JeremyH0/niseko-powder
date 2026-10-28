@@ -1,0 +1,47 @@
+---
+/**
+ * A live ticker band under the hero: the numbers people glance at, scrolling like a
+ * trading-floor board. The first copy is a real list (screen readers read it once); the
+ * duplicate only closes the loop and is hidden from assistive tech. Pauses on hover/focus;
+ * without motion it is a plain, sideways-scrollable strip.
+ */
+import { createTranslator, DEFAULT_LOCALE, type Locale } from '../../i18n/index.ts';
+import type { Conditions } from '../../lib/data/types.ts';
+import { tickerItems } from './items.ts';
+import { tickerStrings } from './strings.ts';
+
+interface Props {
+  conditions: Conditions | null;
+  now: Date;
+  locale?: Locale;
+}
+const { conditions, now, locale = DEFAULT_LOCALE } = Astro.props;
+const t = createTranslator(tickerStrings, locale);
+const items = tickerItems(conditions, now);
+// Roughly constant reading speed whatever the number of items.
+const duration = `${Math.max(30, items.length * 6)}s`;
+---
+
+{
+  items.length > 0 && (
+    <section class="ticker bg-band text-band-ink" tabindex="0" aria-label={t('label')} style={`--ticker-duration:${duration}`}>
+      <div class="ticker-track flex w-max">
+        {[0, 1].map((copy) => (
+          <ul class:list={['flex shrink-0', copy === 1 && 'ticker-dup']} aria-hidden={copy === 1 ? 'true' : undefined}>
+            {items.map((i) => (
+              <li class="flex items-baseline gap-3 py-3.5 pr-10 whitespace-nowrap">
+                <svg viewBox="0 0 32 32" width="10" height="10" aria-hidden="true" class="self-center opacity-60">
+                  <g stroke="currentColor" stroke-width="3.2" stroke-linecap="round">
+                    <path d="M16 4v24M5.6 10l20.8 12M5.6 22l20.8-12" />
+                  </g>
+                </svg>
+                <span class="label opacity-70">{t(`item.${i.key}`)}</span>
+                <span class="font-display text-[1.35rem] leading-none">{i.value}</span>
+              </li>
+            ))}
+          </ul>
+        ))}
+      </div>
+    </section>
+  )
+}

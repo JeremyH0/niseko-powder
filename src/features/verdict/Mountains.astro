@@ -45,23 +45,25 @@ const [yx, yy] = l.yotei.summit;
       </linearGradient>
     </defs>
 
-    <!-- Far horizon -->
-    <path d={l.distant} fill="var(--distant)" opacity="0.7"></path>
-
-    <!-- Yōtei, hazed by distance -->
-    <path d={l.yotei.body} fill="url(#yotei-fill)"></path>
-    {l.yotei.snow && <path d={l.yotei.snow} fill="url(#snow-fill)" opacity="0.92"></path>}
-    <path d={l.yotei.shadow} fill="url(#shade)" opacity="0.75"></path>
-    <text x={yx - 24} y={yy - 12} text-anchor="end" font-size="19" fill="#fff" opacity="0.72" font-family="system-ui, sans-serif">{yoteiLabel}</text>
+    <!-- Far layer (sinks most on scroll): horizon + Yōtei, hazed by distance -->
+    <g class="parallax" style="--depth:70px">
+      <path d={l.distant} fill="var(--distant)" opacity="0.7"></path>
+      <path d={l.yotei.body} fill="url(#yotei-fill)"></path>
+      {l.yotei.snow && <path d={l.yotei.snow} fill="url(#snow-fill)" opacity="0.92"></path>}
+      <path d={l.yotei.shadow} fill="url(#shade)" opacity="0.75"></path>
+      <text x={yx - 24} y={yy - 12} text-anchor="end" font-size="13" fill="#fff" opacity="0.78" style="font-family:var(--font-mono);letter-spacing:0.14em;text-transform:uppercase">{yoteiLabel}</text>
+    </g>
 
     <!-- Valley fog between the volcano and the range -->
     <rect class="fog" x="-60" y="168" width="1320" height="96" fill="url(#haze)"></rect>
 
-    <!-- Niseko Annupuri range -->
-    <path d={l.range.body} fill="url(#range-fill)"></path>
-    {l.range.snow && <path d={l.range.snow} fill="url(#snow-fill)"></path>}
-    <path d={l.range.shadow} fill="url(#shade)"></path>
-    <text x={ax - 34} y={ay - 14} text-anchor="start" font-size="19" fill="#fff" opacity="0.78" font-family="system-ui, sans-serif">{annupuriLabel}</text>
+    <!-- Niseko Annupuri range (middle layer) -->
+    <g class="parallax" style="--depth:28px">
+      <path d={l.range.body} fill="url(#range-fill)"></path>
+      {l.range.snow && <path d={l.range.snow} fill="url(#snow-fill)"></path>}
+      <path d={l.range.shadow} fill="url(#shade)"></path>
+      <text x={ax - 34} y={ay - 14} text-anchor="start" font-size="13" fill="#fff" opacity="0.82" style="font-family:var(--font-mono);letter-spacing:0.14em;text-transform:uppercase">{annupuriLabel}</text>
+    </g>
 
     <!-- Low fog, then the fir forest edge -->
     <rect class="fog" style="animation-delay:-9s" x="-60" y="226" width="1320" height="56" fill="url(#haze)" opacity="0.85"></rect>

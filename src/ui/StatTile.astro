@@ -1,7 +1,8 @@
 ---
 /**
- * A labelled number (dataviz stat-tile contract): label · value (sans semibold,
- * proportional figures) · optional note. Real text for screen readers, crawlers, no-JS.
+ * A labelled number (dataviz stat-tile contract): mono label · big serif value · note.
+ * No card of its own: it sits in a `ruled` grid, which draws the hairlines between tiles.
+ * Real text for screen readers, crawlers and no-JS.
  */
 interface Props {
   label: string;
@@ -9,17 +10,25 @@ interface Props {
   unit?: string;
   note?: string;
   muted?: boolean;
+  /** `lg` for the at-a-glance strip under the hero. */
+  size?: 'md' | 'lg';
   class?: string;
 }
-const { label, value, unit, note, muted = false, class: className } = Astro.props;
+const { label, value, unit, note, muted = false, size = 'md', class: className } = Astro.props;
 ---
 
-<div class:list={['glass rounded-2xl p-4', className]}>
-  <dt class="text-xs font-medium tracking-wide text-ink-muted">{label}</dt>
-  <dd class="mt-1 flex items-baseline gap-1">
-    <span class:list={['text-3xl font-semibold tracking-tight sm:text-[2rem]', muted && 'text-ink-muted']}>{value}</span>
-    {unit && <span class="text-sm font-medium text-ink-muted">{unit}</span>}
+<div class:list={['flex flex-col', size === 'lg' ? 'gap-4 p-4 sm:p-6' : 'gap-3 p-4 sm:p-5', className]}>
+  <dt class="label text-ink-muted">{label}</dt>
+  <dd class="mt-auto flex items-end gap-1.5">
+    <span
+      class:list={[
+        'numeral',
+        size === 'lg' ? 'text-[clamp(3.25rem,2.4rem+3.4vw,6rem)]' : 'text-[clamp(2.75rem,2.3rem+1.4vw,3.5rem)]',
+        muted && 'text-ink-muted',
+      ]}>{value}</span
+    >
+    {unit && <span class="label mb-1.5 text-ink-muted">{unit}</span>}
     <slot />
   </dd>
-  {note && <dd class="mt-1 text-xs leading-snug text-ink-muted">{note}</dd>}
+  {note && <dd class="text-[0.8125rem] leading-snug text-ink-muted">{note}</dd>}
 </div>

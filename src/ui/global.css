@@ -1,22 +1,30 @@
 @import 'tailwindcss';
 @import '@fontsource/instrument-serif/latin-400.css';
+@import '@fontsource/instrument-serif/latin-400-italic.css';
+@import '@fontsource-variable/geist/wght.css';
+@import '@fontsource-variable/geist-mono/wght.css';
 
 /*
- * Design tokens — "Niseko night powder".
- * Light = bluebird day (icy white-blue), dark = deep Hokkaido night. Both AA.
+ * Design tokens — "The Daily Powder Report": an editorial weather instrument.
+ * Serif display (Instrument Serif) for answers and big numbers, Geist for reading,
+ * Geist Mono for labels and data. Hairline rules instead of shadows.
+ * Light = snow paper, dark = Hokkaido night. Both AA.
  * Chart series colours are validated with the dataviz palette validator (CVD + contrast):
  *   snow = categorical slot 1 (blue), rain = slot 2 (orange). Text never wears them.
  */
 :root {
   color-scheme: light;
-  --paper: #eaf2fb;
-  --paper-2: #f6f9fd;
-  --card: rgb(255 255 255 / 0.72);
-  --card-solid: #f6f9fd;
-  --ink: #0b1b2f;
-  --ink-muted: #44566c;
-  --line: rgb(16 42 74 / 0.1);
+  --paper: #eef2f6;
+  --paper-2: #f8fafc;
+  --card: #f8fafc;
+  --card-solid: #f8fafc;
+  --ink: #0a1220;
+  --ink-muted: #46546a;
+  --line: rgb(10 18 32 / 0.14);
+  --rule: rgb(10 18 32 / 0.85);
   --grid: rgb(16 42 74 / 0.09);
+  --band: #0a1220;
+  --band-ink: #eef2f6;
   --accent: #1c5cab;
   --snow: #2a78d6;
   --snow-soft: #cde2fb;
@@ -27,22 +35,22 @@
   --warn-ink: #7a3300;
   --good: #0f6b52;
   --highlight: rgb(42 120 214 / 0.1);
-  --glow-1: rgb(120 180 255 / 0.35);
-  --glow-2: rgb(180 220 255 / 0.45);
-  --shadow: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 18px 40px -26px rgb(12 40 80 / 0.45);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --paper: #060c18;
-    --paper-2: #0b1424;
-    --card: rgb(22 36 62 / 0.55);
-    --card-solid: #111c31;
-    --ink: #eaf2ff;
-    --ink-muted: #a8b8d0;
-    --line: rgb(190 215 255 / 0.12);
+    --paper: #060a12;
+    --paper-2: #0c121e;
+    --card: #0c121e;
+    --card-solid: #111a2b;
+    --ink: #e8eef7;
+    --ink-muted: #a3b1c6;
+    --line: rgb(190 215 255 / 0.14);
+    --rule: rgb(232 238 247 / 0.7);
     --grid: rgb(190 215 255 / 0.1);
+    --band: #e8eef7;
+    --band-ink: #060a12;
     --accent: #9cc5f7;
     --snow: #3987e5;
     --snow-soft: #1b3a66;
@@ -53,9 +61,6 @@
     --warn-ink: #ffd9a8;
     --good: #6ee7c5;
     --highlight: rgb(57 135 229 / 0.16);
-    --glow-1: rgb(57 135 229 / 0.22);
-    --glow-2: rgb(120 90 220 / 0.16);
-    --shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 24px 48px -28px rgb(0 0 0 / 0.8);
   }
 }
 
@@ -66,6 +71,9 @@
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
   --color-line: var(--line);
+  --color-rule: var(--rule);
+  --color-band: var(--band);
+  --color-band-ink: var(--band-ink);
   --color-accent: var(--accent);
   --color-snow: var(--snow);
   --color-snow-soft: var(--snow-soft);
@@ -76,12 +84,15 @@
   --color-highlight: var(--highlight);
 
   --font-display: 'Instrument Serif', ui-serif, Georgia, serif;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
 @layer base {
   html {
     font-family: var(--font-sans);
+    /* Fallback fonts take the web font's x-height while it loads: no jump when it swaps. */
+    font-size-adjust: from-font;
     /* The display face ships one weight: never let the browser fake a bold or italic. */
     font-synthesis: none;
     color: var(--ink);
@@ -90,12 +101,12 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
-  /* A soft winter atmosphere behind the content, so the glass cards have something to frost. */
   body {
-    background:
-      radial-gradient(60rem 40rem at 85% 30rem, var(--glow-1), transparent 70%),
-      radial-gradient(50rem 36rem at 0% 70rem, var(--glow-2), transparent 70%),
-      linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+    background: var(--paper);
+  }
+  ::selection {
+    background: var(--snow);
+    color: #fff;
   }
   /* Tabular figures only where numbers line up (tables, axes); big numbers stay proportional. */
   table,
@@ -121,29 +132,89 @@
   }
 }
 
+/* ---------------------------------------------------------------- Type helpers */
+
+/* Small uppercase data labels: the "instrument" voice of the page. */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.3;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+/* Big serif numbers (proportional, tight). */
+@utility numeral {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+}
+
+/* Underline that draws in from the left on hover (text links). */
+@utility link-draw {
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 100% 1px;
+  @media (prefers-reduced-motion: no-preference) {
+    transition: background-size 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+    &:hover,
+    :hover > & {
+      background-size: 0% 1px;
+      background-position: 100% 100%;
+    }
+  }
+}
+
 /* ---------------------------------------------------------------- Surfaces */
 
-@utility glass {
+/* Content surface: flat paper with a hairline. No shadows, no blur below the hero. */
+@utility panel {
   background: var(--card);
   border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  backdrop-filter: blur(18px) saturate(140%);
 }
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .glass {
-    background: var(--card-solid);
+
+/* Hairline grid: the parent paints the lines through a 1px gap. Children need a background. */
+@utility ruled {
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+  border-block: 1px solid var(--line);
+  & > * {
+    background: var(--paper);
   }
+}
+
+/* Film grain over the sky and the footer: a 2 KB SVG noise tile, no request. */
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* ---------------------------------------------------------------- Sky (hero) */
 
+/*
+ * Time of day sets the base palette (--p-*); weather then washes over it into the final
+ * --sky-* / --ridge-* tokens. Two layers on purpose: a custom property that mixes its own
+ * value (--sky-top: color-mix(…, var(--sky-top))) is a cycle, the whole sky turns invalid
+ * and the hero goes white — exactly on snowy days.
+ */
 .sky {
-  --sky-top: #050b1f;
-  --sky-mid: #13224a;
-  --sky-bottom: #2b3f73;
-  --ridge-far: #31467d;
-  --ridge-mid: #1a2850;
+  --p-top: #050b1f;
+  --p-mid: #13224a;
+  --p-bottom: #2b3f73;
+  --p-far: #31467d;
+  --p-ridge: #1a2850;
+  --sky-top: var(--p-top);
+  --sky-mid: var(--p-mid);
+  --sky-bottom: var(--p-bottom);
+  --ridge-far: var(--p-far);
+  --ridge-mid: var(--p-ridge);
   --fog: rgb(170 195 240 / 0.18);
   /* Snow takes the light of the sky: moonlit blue at night, alpenglow at dawn and dusk. */
   --cap: #c3d1ea;
@@ -158,55 +229,55 @@
 }
 .sky[data-sky='dawn'] {
   --cap: #f7dcd6;
-  --sky-top: #16214d;
-  --sky-mid: #5a4f86;
-  --sky-bottom: #e3a39a;
-  --ridge-far: #8b7aa6;
-  --ridge-mid: #3d3a6d;
+  --p-top: #16214d;
+  --p-mid: #5a4f86;
+  --p-bottom: #e3a39a;
+  --p-far: #8b7aa6;
+  --p-ridge: #3d3a6d;
   --fog: rgb(255 210 200 / 0.22);
   --stars: 0.25;
 }
 .sky[data-sky='day'] {
   --cap: #f4f8ff;
-  --sky-top: #0f4a93;
-  --sky-mid: #2f74c2;
-  --sky-bottom: #8cc0ee;
-  --ridge-far: #a9c8e8;
-  --ridge-mid: #5684b8;
+  --p-top: #0f4a93;
+  --p-mid: #2f74c2;
+  --p-bottom: #8cc0ee;
+  --p-far: #a9c8e8;
+  --p-ridge: #5684b8;
   --fog: rgb(255 255 255 / 0.28);
   --stars: 0;
 }
 .sky[data-sky='dusk'] {
   --cap: #f2d2cc;
-  --sky-top: #141a46;
-  --sky-mid: #4b3a78;
-  --sky-bottom: #e08a6d;
-  --ridge-far: #8c6c8f;
-  --ridge-mid: #382e5e;
+  --p-top: #141a46;
+  --p-mid: #4b3a78;
+  --p-bottom: #e08a6d;
+  --p-far: #8c6c8f;
+  --p-ridge: #382e5e;
   --fog: rgb(255 190 170 / 0.2);
   --stars: 0.3;
 }
 /* Weather washes over the time-of-day palette. */
 .sky[data-weather='snow'] {
-  --sky-top: color-mix(in oklab, #2f3a4b 60%, var(--sky-top));
-  --sky-mid: color-mix(in oklab, #5c6879 55%, var(--sky-mid));
-  --sky-bottom: color-mix(in oklab, #a7b2c1 55%, var(--sky-bottom));
-  --ridge-far: color-mix(in oklab, #c9d1db 60%, var(--ridge-far));
-  --ridge-mid: color-mix(in oklab, #75808f 50%, var(--ridge-mid));
+  --sky-top: color-mix(in oklab, #2f3a4b 60%, var(--p-top));
+  --sky-mid: color-mix(in oklab, #5c6879 55%, var(--p-mid));
+  --sky-bottom: color-mix(in oklab, #a7b2c1 55%, var(--p-bottom));
+  --ridge-far: color-mix(in oklab, #c9d1db 60%, var(--p-far));
+  --ridge-mid: color-mix(in oklab, #75808f 50%, var(--p-ridge));
   --fog: rgb(235 240 248 / 0.4);
   --stars: 0;
 }
 .sky[data-weather='rain'] {
-  --sky-top: color-mix(in oklab, #232a35 55%, var(--sky-top));
-  --sky-mid: color-mix(in oklab, #434c59 50%, var(--sky-mid));
-  --sky-bottom: color-mix(in oklab, #737e8c 50%, var(--sky-bottom));
+  --sky-top: color-mix(in oklab, #232a35 55%, var(--p-top));
+  --sky-mid: color-mix(in oklab, #434c59 50%, var(--p-mid));
+  --sky-bottom: color-mix(in oklab, #737e8c 50%, var(--p-bottom));
   --fog: rgb(200 210 225 / 0.3);
   --stars: 0;
 }
 .sky[data-weather='cloud'] {
-  --sky-top: color-mix(in oklab, #2c3644 30%, var(--sky-top));
-  --sky-mid: color-mix(in oklab, #4d5868 25%, var(--sky-mid));
-  --sky-bottom: color-mix(in oklab, #8b96a6 25%, var(--sky-bottom));
+  --sky-top: color-mix(in oklab, #2c3644 30%, var(--p-top));
+  --sky-mid: color-mix(in oklab, #4d5868 25%, var(--p-mid));
+  --sky-bottom: color-mix(in oklab, #8b96a6 25%, var(--p-bottom));
   --stars: 0;
 }
 .sky[data-verdict='epic'] {
@@ -237,6 +308,27 @@
   text-shadow:
     0 1px 2px rgb(0 0 0 / 0.25),
     0 2px 28px rgb(0 0 0 / 0.2);
+}
+
+/* The instrument panel on the sky: a dark frost, so white text stays AA on the pale day sky. */
+.hero-panel {
+  border: 1px solid rgb(255 255 255 / 0.2);
+  background: rgb(6 14 30 / 0.28);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  backdrop-filter: blur(16px) saturate(130%);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .hero-panel {
+    background: rgb(6 14 30 / 0.55);
+  }
+}
+
+/* "Live" dot beside the clock. */
+.live-dot {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: #34d399;
 }
 
 /* The verdict: frosted lettering. Solid white fallback keeps contrast if clip isn't supported. */
@@ -285,6 +377,14 @@
     scale: 1 0;
   }
 }
+@keyframes pulse {
+  from {
+    box-shadow: 0 0 0 0 rgb(52 211 153 / 0.55);
+  }
+  to {
+    box-shadow: 0 0 0 7px rgb(52 211 153 / 0);
+  }
+}
 @keyframes drift {
   from {
     translate: -2% 0;
@@ -319,6 +419,15 @@
   .fog {
     animation: drift 18s ease-in-out infinite alternate;
   }
+  .live-dot {
+    animation: pulse 2.4s ease-out infinite;
+  }
+  .brand-mark {
+    transition: rotate 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  :hover > .brand-mark {
+    rotate: 60deg;
+  }
 
   /* Scroll reveals: progressive enhancement, decorative only (no fallback by design). */
   @supports ((animation-timeline: view()) and (animation-range: entry)) {
@@ -334,6 +443,62 @@
       animation-timeline: view();
       animation-range: entry 0% entry 60%;
     }
+  }
+
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    /* Section titles wipe up into place as they enter. Decorative: no fallback by design. */
+    @keyframes title-in {
+      from {
+        clip-path: inset(0 0 100% 0);
+        translate: 0 0.35em;
+      }
+    }
+    .title-in {
+      animation: title-in linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 80%;
+    }
+
+    /* Hero depth: as the hero scrolls away, the far mountains sink slower than the near ones
+       and the answer drifts up. The near snowfield never moves, so it stays seamless with the page. */
+    .sky {
+      view-timeline: --hero;
+    }
+    @keyframes sink {
+      to {
+        translate: 0 var(--depth);
+      }
+    }
+    .parallax {
+      animation: sink linear both;
+      animation-timeline: --hero;
+      animation-range: exit 0% exit 100%;
+    }
+    @keyframes lift {
+      to {
+        translate: 0 -14vh;
+        opacity: 0.15;
+      }
+    }
+    .hero-copy {
+      animation: lift linear both;
+      animation-timeline: --hero;
+      animation-range: exit 0% exit 90%;
+    }
+  }
+
+  /* The live ticker: one copy scrolls, the duplicate (aria-hidden) closes the loop. */
+  @keyframes ticker {
+    to {
+      translate: -50% 0;
+    }
+  }
+  .ticker-track {
+    animation: ticker var(--ticker-duration, 60s) linear infinite;
+  }
+  .ticker:hover .ticker-track,
+  .ticker:focus-within .ticker-track {
+    animation-play-state: paused;
   }
 
   /* Smooth page-to-page transitions (cross-document view transitions). */
@@ -408,6 +573,9 @@ html:not(.js) .js-only {
  * answer is always one glance away while you read the forecast. Hidden = not focusable.
  */
 .today-bar {
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
   visibility: hidden;
   opacity: 0;
   translate: 0 -100%;
@@ -453,7 +621,6 @@ html:not(.js) .js-only {
 /* Even grids, decided by the card's own width (no orphans at any breakpoint). */
 .tiles-5 {
   display: grid;
-  gap: 0.75rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .tiles-5 > :last-child:nth-child(odd) {
@@ -467,18 +634,80 @@ html:not(.js) .js-only {
     grid-column: auto;
   }
 }
-.links-grid {
+/* Index rows ("Before you go"): a tint wipes up from the baseline on hover, the title nudges. */
+.index-row {
+  position: relative;
+  isolation: isolate;
+}
+.index-row::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--highlight);
+  scale: 1 0;
+  transform-origin: bottom;
+}
+.index-row:hover::before,
+.index-row:focus-visible::before {
+  scale: 1 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .index-row::before,
+  .index-row .index-title,
+  .index-row .index-arrow {
+    transition:
+      scale 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+      translate 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+      background-color 0.3s,
+      color 0.3s;
+  }
+  .index-row:hover .index-title {
+    translate: 0.5rem 0;
+  }
+}
+.index-row:hover .index-arrow {
+  background: var(--ink);
+  color: var(--paper);
+}
+.index-grid {
   display: grid;
-  gap: 0.75rem;
-  grid-template-columns: 1fr;
+  grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 1rem;
 }
-@container (min-width: 34rem) {
-  .links-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@container (min-width: 48rem) {
+  .index-grid {
+    grid-template-columns: 4rem minmax(0, 1.1fr) minmax(0, 1fr) auto;
+    column-gap: 2rem;
   }
 }
-@container (min-width: 60rem) {
-  .links-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+/* ---------------------------------------------------------------- Ticker
+ * Without motion (or before CSS animations), the first copy simply scrolls sideways.
+ */
+.ticker {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ticker {
+    overflow: hidden;
   }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-dup {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------- Footer wordmark
+ * Sized so "Niseko Powder" spans the page width at any viewport.
+ */
+.wordmark {
+  font-family: var(--font-display);
+  font-size: 20.4vw;
+  line-height: 0.78;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
 }

@@ -21,16 +21,19 @@ const fillY = y(cm);
 const ticks = Array.from({ length: max / 10 + 1 }, (_, i) => i * 10);
 ---
 
-<figure class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4" aria-label={`${label}: ${Math.round(cm)} cm — ${feel[depthFeel(cm)]}`}>
-  <svg viewBox="0 0 92 132" aria-hidden="true" class="h-[106px] w-[74px] shrink-0 overflow-visible sm:h-[132px] sm:w-[92px]">
+<figure class="flex h-full flex-col justify-between gap-3" aria-label={`${label}: ${Math.round(cm)} cm — ${feel[depthFeel(cm)]}`}>
+  <figcaption class="label opacity-85">{label}</figcaption>
+  <div class="flex items-end justify-between gap-2">
+    <span class="numeral min-w-0 text-[clamp(3.6rem,2.6rem+3vw,5.5rem)]" aria-hidden="true">{Math.round(cm)}<span class="label ml-1 align-top opacity-80">cm</span></span>
+  <svg viewBox="0 0 92 132" aria-hidden="true" class="h-[92px] w-[64px] shrink-0 overflow-visible sm:h-[112px] sm:w-[78px]">
     <!-- stake -->
-    <rect x="18" y={top - 2} width="16" height={H + 4} rx="4" fill="rgb(255 255 255 / 0.12)" stroke="rgb(255 255 255 / 0.35)" />
+    <rect x="18" y={top - 2} width="16" height={H + 4} rx="3" fill="rgb(255 255 255 / 0.1)" stroke="rgb(255 255 255 / 0.35)" />
     {
       ticks.map((v) => (
         <g>
           <line x1="18" x2={v % 20 === 0 ? 30 : 25} y1={y(v)} y2={y(v)} stroke="rgb(255 255 255 / 0.6)" />
           {v % 20 === 0 && (
-            <text x="13" y={y(v) + 3.5} text-anchor="end" font-size="9" fill="rgb(255 255 255 / 0.75)">
+            <text x="13" y={y(v) + 3.5} text-anchor="end" font-size="9" fill="rgb(255 255 255 / 0.75)" style="font-family:var(--font-mono)">
               {v}
             </text>
           )}
@@ -52,17 +55,14 @@ const ticks = Array.from({ length: max / 10 + 1 }, (_, i) => i * 10);
       LANDMARKS.filter((l) => l.cm <= max).map((l) => (
         <g>
           <line x1="38" x2="46" y1={y(l.cm)} y2={y(l.cm)} stroke="rgb(255 255 255 / 0.5)" />
-          <text x="49" y={y(l.cm) + 3.5} font-size="9.5" fill="rgb(255 255 255 / 0.85)">
+          <text x="49" y={y(l.cm) + 3.5} font-size="9" fill="rgb(255 255 255 / 0.85)" style="font-family:var(--font-mono)">
             {landmarks[l.key]}
           </text>
         </g>
       ))
     }
   </svg>
-  <figcaption class="leading-tight">
-    <span class="block text-xs font-medium tracking-wide opacity-80">{label}</span>
-    <span class="mt-1 block text-[1.75rem] font-semibold tracking-tight sm:text-[2rem]">{Math.round(cm)}<span class="ml-0.5 text-base font-medium opacity-80">cm</span></span>
-    <span class="block text-sm font-semibold">{feel[depthFeel(cm)]}</span>
-    <span class="mt-1 hidden max-w-[11rem] text-xs opacity-75 sm:block">{note}</span>
-  </figcaption>
+  </div>
+  <p class="text-sm font-medium" aria-hidden="true">{feel[depthFeel(cm)]}</p>
+  <p class="-mt-2 hidden max-w-[16rem] text-xs leading-snug opacity-75 sm:block">{note}</p>
 </figure>

@@ -1,14 +1,16 @@
 ---
 /**
- * The answer. Big frosted word, plain-English headline, then a glass panel with the
- * powder score, the powder stake and the reasons — on a sky that follows the real
- * sunrise/sunset at Niseko and the weather. The `atmosphere` slot takes the snowfall canvas.
+ * The answer, set like the front page of a daily paper: a masthead line, the question in
+ * italic, the verdict word as big as the page allows, then an "instrument panel" with the
+ * powder score, the powder stake and the scored reasons. The sky follows the real
+ * sunrise/sunset at Niseko and the weather; the `atmosphere` slot takes the snowfall canvas.
  */
 import { site } from '../../config/site.ts';
 import { createTranslator, DEFAULT_LOCALE, type Locale } from '../../i18n/index.ts';
 import type { Conditions, PowderReason } from '../../lib/data/types.ts';
 import { formatAge, formatClock, formatFullDate, formatTemp } from '../../lib/format.ts';
-import { minutesBetween } from '../../lib/time.ts';
+import { seasonDay } from '../../lib/season.ts';
+import { jstDate, minutesBetween } from '../../lib/time.ts';
 import SiteNav from '../../ui/SiteNav.astro';
 import { verdictCopy } from './copy.ts';
 import Mountains from './Mountains.astro';
@@ -37,11 +39,12 @@ function reasonText(r: PowderReason): string {
     age: formatAge(p.minutes ?? 0),
   });
 }
-// Most informative first: what changed the score, then context. Max 4 chips.
+// Most informative first: what changed the score, then context. Max 4 rows.
 const reasons = [...(powder?.reasons ?? [])]
   .filter((r) => `reason.${r.code}` in verdictStrings.en)
   .sort((a, b) => Math.abs(b.points) - Math.abs(a.points))
   .slice(0, 4);
+const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${Math.abs(n)}` : '±0');
 
 const obsAge = conditions?.observed ? minutesBetween(conditions.observed.observedAt, now) : null;
 const dataAge = conditions ? minutesBetween(conditions.generatedAt, now) : null;
@@ -52,11 +55,19 @@ const delayedBy =
       ? dataAge
       : null;
 const updatedAt = conditions?.observed?.observedAt ?? conditions?.generatedAt ?? null;
+
+const sd = seasonDay(jstDate(now));
+const seasonLine =
+  sd.kind === 'day'
+    ? t('season.day', { day: sd.day, of: sd.of })
+    : sd.inDays === 1
+      ? t('season.opensTomorrow')
+      : t('season.opens', { n: sd.inDays });
 ---
 
 <header
   id="top"
-  class="sky relative isolate flex flex-col overflow-hidden sm:min-h-[min(94svh,920px)] xl:min-h-svh"
+  class="sky grain relative isolate flex flex-col overflow-hidden sm:min-h-[min(94svh,920px)] xl:min-h-svh"
   data-sky={m.sky}
   data-weather={m.weather}
   data-verdict={powder?.verdict ?? 'none'}
@@ -64,16 +75,16 @@ const updatedAt = conditions?.observed?.observedAt ?? conditions?.generatedAt ??
   <div class="stars pointer-events-none absolute inset-x-0 top-0 h-[65%]" aria-hidden="true"></div>
   <slot name="atmosphere" />
 
-  <div class="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[clamp(170px,28vw,400px)] xl:pb-[clamp(380px,calc(28vw+40px),570px)] sm:px-6 lg:px-8">
+  <div class="relative z-10 mx-auto flex w-full max-w-[90rem] flex-1 flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[clamp(170px,28vw,400px)] sm:px-6 lg:px-10 xl:pb-[clamp(380px,calc(28vw+40px),570px)]">
     <SiteNav variant="overlay" current="home">
       {
         delayedBy !== null ? (
-          <a href="#right-now" class="ml-1 rounded-full bg-amber-300 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-amber-950">
+          <a href="#right-now" class="label tap ml-1 rounded-full bg-amber-300 px-3 whitespace-nowrap text-amber-950">
             {t('delayed', { age: formatAge(delayedBy) })}
           </a>
         ) : (
           updatedAt && (
-            <a href="#right-now" class="ml-1 hidden rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium whitespace-nowrap backdrop-blur-sm hover:bg-white/25 sm:inline">
+            <a href="#right-now" class="label tap ml-1 hidden rounded-full border border-white/25 px-3 whitespace-nowrap hover:bg-white/15 sm:inline-flex">
               {t('updated', { time: formatClock(updatedAt) })}
             </a>
           )
@@ -81,68 +92,64 @@ const updatedAt = conditions?.observed?.observedAt ?? conditions?.generatedAt ??
       }
     </SiteNav>
 
-    <div class="sky-text mt-8 grid flex-1 content-start gap-y-8 sm:mt-[8vh] xl:mt-[5vh] xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] xl:items-end xl:gap-x-12">
+    <div class="hero-copy sky-text mt-8 grid flex-1 content-start gap-y-8 sm:mt-[7vh] xl:mt-[4vh] xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] xl:items-end xl:gap-x-14">
       <div>
-      <p class="rise flex flex-wrap gap-x-3 gap-y-1 text-[0.8rem] font-medium tracking-[0.16em] uppercase opacity-90" style="--i:0">
-        <span>{t('today.label')} · {formatFullDate(now)}</span>
-        <span class="tracking-normal normal-case opacity-90">
-          {t('sun', { rise: formatClock(m.sunrise), set: formatClock(m.sunset) })}
-        </span>
-      </p>
-      <h1 class="mt-3">
-        <span class="rise block text-xl font-medium sm:text-2xl" style="--i:1">{question}</span>
-        <span class="mt-1 block">
-          <span class="frost settle block font-display text-[clamp(5.75rem,3rem+18vw,14rem)] leading-[0.82] font-normal tracking-[-0.02em]">{word}</span>
-        </span>
-      </h1>
-      <p class="rise mt-5 max-w-2xl text-lg leading-snug text-balance sm:text-2xl" style="--i:3">{headline}</p>
+        <p class="label rise flex flex-wrap gap-x-5 gap-y-1 border-b border-white/25 pb-3" style="--i:0">
+          <span>{t('today.label')} — {formatFullDate(now)}</span>
+          <span>{seasonLine}</span>
+          <span class="opacity-85">{t('sun', { rise: formatClock(m.sunrise), set: formatClock(m.sunset) })}</span>
+        </p>
+        <h1 class="mt-6 sm:mt-8">
+          <span class="rise block font-display text-[clamp(1.6rem,1.1rem+1.7vw,2.6rem)] leading-tight italic" style="--i:1">{question}</span>
+          <span class="mt-1 block">
+            <span class="frost settle block font-display text-[clamp(6.25rem,2rem+20vw,17.5rem)] leading-[0.8] font-normal tracking-[-0.035em]">{word}</span>
+          </span>
+        </h1>
+        <p class="rise mt-6 max-w-xl text-lg leading-snug text-balance sm:text-[1.4rem]" style="--i:3">{headline}</p>
       </div>
 
       {
         powder && (
-          <div
-            class="rise grid max-w-4xl grid-cols-2 gap-x-3 gap-y-4 rounded-3xl border border-white/15 bg-white/10 p-4 backdrop-blur-md sm:grid-cols-[auto_auto_1fr] sm:items-center sm:gap-8 sm:p-5 xl:grid-cols-2 xl:gap-6 xl:p-6"
-            style="--i:4"
-          >
-            <ScoreRing score={powder.score} label={t('score.label')} of={t('score.of')} />
-            <PowderStake
-              cm={powder.freshCm}
-              label={t('stake.label')}
-              note={t('stake.note')}
-              feel={{
-                none: t('stake.none'),
-                dusting: t('stake.dusting'),
-                ankle: t('stake.ankle'),
-                boot: t('stake.boot'),
-                knee: t('stake.knee'),
-                deep: t('stake.deep'),
-              }}
-              landmarks={{ ankle: t('stake.mark.ankle'), boot: t('stake.mark.boot'), knee: t('stake.mark.knee') }}
-            />
-            <div class="col-span-2 min-w-0 sm:col-span-1 sm:border-l sm:border-white/15 sm:pl-6 xl:col-span-2 xl:border-t xl:border-l-0 xl:pt-5 xl:pl-0">
-              {reasons.length > 0 && (
-                <ul class="flex flex-wrap gap-2 text-sm" aria-label={t('reasons.label')}>
-                  {reasons.map((r) => (
-                    <li
-                      class:list={[
-                        'rounded-full px-3 py-1',
-                        r.points > 0 && 'bg-white/25 font-medium',
-                        r.points < 0 && 'bg-black/25 ring-1 ring-amber-200/70',
-                        r.points === 0 && 'bg-white/12',
-                      ]}
-                    >
-                      <span aria-hidden="true">{r.points > 0 ? '▲ ' : r.points < 0 ? '▼ ' : ''}</span>
-                      {reasonText(r)}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <div class="mt-2 flex flex-wrap items-center gap-x-4">
-                <a href="/about#score" class="tap text-sm underline decoration-white/50 hover:decoration-white">
-                  {t('score.how')}
-                </a>
-                <slot name="share" />
+          <div class="hero-panel rise max-w-3xl overflow-hidden rounded-2xl" style="--i:4">
+            <div class="grid grid-cols-2 divide-x divide-white/15">
+              <div class="p-4 sm:p-5">
+                <ScoreRing score={powder.score} label={t('score.label')} of={t('score.of')} />
               </div>
+              <div class="p-4 sm:p-5">
+                <PowderStake
+                  cm={powder.freshCm}
+                  label={t('stake.label')}
+                  note={t('stake.note')}
+                  feel={{
+                    none: t('stake.none'),
+                    dusting: t('stake.dusting'),
+                    ankle: t('stake.ankle'),
+                    boot: t('stake.boot'),
+                    knee: t('stake.knee'),
+                    deep: t('stake.deep'),
+                  }}
+                  landmarks={{ ankle: t('stake.mark.ankle'), boot: t('stake.mark.boot'), knee: t('stake.mark.knee') }}
+                />
+              </div>
+            </div>
+            {reasons.length > 0 && (
+              <ul class="divide-y divide-white/10 border-t border-white/15 text-[0.95rem]" aria-label={t('reasons.label')}>
+                {reasons.map((r) => (
+                  <li class="flex items-baseline gap-3 px-4 py-2.5 sm:px-5">
+                    <span aria-hidden="true" class:list={['label w-3 shrink-0', r.points < 0 && 'text-amber-200']}>
+                      {r.points > 0 ? '▲' : r.points < 0 ? '▼' : '·'}
+                    </span>
+                    <span class="min-w-0 flex-1">{reasonText(r)}</span>
+                    {r.points !== 0 && <span class="label tabular shrink-0 opacity-80">{t('points', { points: signed(r.points) })}</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-white/15 px-4 py-2 sm:px-5">
+              <a href="/about#score" class="label tap">
+                <span class="link-draw">{t('score.how')}</span>
+              </a>
+              <slot name="share" />
             </div>
           </div>
         )

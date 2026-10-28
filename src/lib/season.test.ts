@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   SEASON_DAYS,
+  seasonDay,
   averageSeries,
   cumulative,
   currentOrNextSeason,
@@ -79,5 +80,16 @@ describe('season data', () => {
 
   it('empty season has no stats', () => {
     expect(seasonStats('2026-27', emptySeason())).toMatchObject({ totalSnowfallCm: 0, maxDepth: null, biggestDay: null });
+  });
+});
+
+describe('seasonDay', () => {
+  it('counts down to opening day in the off-season', () => {
+    expect(seasonDay('2026-10-28')).toEqual({ kind: 'opens', season: '2026-27', inDays: 4 });
+  });
+  it('numbers the days of the season, with its real length', () => {
+    expect(seasonDay('2026-11-01')).toEqual({ kind: 'day', season: '2026-27', day: 1, of: 212 });
+    expect(seasonDay('2027-05-31')).toEqual({ kind: 'day', season: '2026-27', day: 212, of: 212 });
+    expect(seasonDay('2027-12-25')).toMatchObject({ day: 55, of: 213 });
   });
 });

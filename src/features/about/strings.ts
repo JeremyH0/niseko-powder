@@ -3,6 +3,8 @@ import { defineMessages } from '../../i18n/index.ts';
 export const aboutStrings = defineMessages({
   en: {
     title: 'How it works',
+    kicker: 'Methodology',
+    toc: 'On this page',
     description: 'Where the Niseko Powder data comes from, how the powder score is calculated, and its limits.',
     back: '← Back to today’s answer',
     lead: 'One question, answered honestly every morning: is it a powder day in Niseko? Here is exactly how we answer it.',

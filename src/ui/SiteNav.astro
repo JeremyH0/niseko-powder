@@ -1,5 +1,8 @@
 ---
-/** Top navigation. `overlay` sits on the hero sky (white text); `solid` on normal pages. */
+/**
+ * Top navigation. `overlay` sits on the hero sky (white text); `solid` on normal pages.
+ * The centre shows a live JST clock (server time first, then ticking): the site's "live" signal.
+ */
 import { site } from '../config/site.ts';
 import { common } from '../i18n/common.ts';
 import { createTranslator, DEFAULT_LOCALE, type Locale } from '../i18n/index.ts';
@@ -15,26 +18,39 @@ const links = [
   { href: '/season', key: 'nav.season', id: 'season' },
   { href: '/about', key: 'nav.about', id: 'about' },
 ] as const;
+const clock = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Asia/Tokyo',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+}).format(new Date());
 ---
 
 <nav
   aria-label={t('nav.label')}
-  class:list={['flex items-center justify-between gap-3 text-sm', variant === 'solid' && 'text-ink']}
+  class:list={['grid grid-cols-[1fr_auto] items-center gap-3 lg:grid-cols-[1fr_auto_1fr]', variant === 'solid' && 'text-ink']}
 >
-  <a href="/" class="vt-brand tap flex items-center gap-2 font-semibold tracking-tight whitespace-nowrap" aria-current={current === 'home' ? 'page' : undefined}>
-    <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"
+  <a href="/" class="vt-brand tap group flex items-center gap-2.5 justify-self-start font-medium tracking-tight whitespace-nowrap" aria-current={current === 'home' ? 'page' : undefined}>
+    <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" class="brand-mark"
       ><g stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M16 4v24M5.6 10l20.8 12M5.6 22l20.8-12"></path></g></svg
     >
-    {site.name}
+    <span class="text-[0.95rem]">{site.name}</span>
   </a>
-  <div class="flex items-center gap-1">
+  <p class="label hidden items-center gap-2 opacity-90 lg:flex">
+    <span class="live-dot" aria-hidden="true"></span>
+    {t('nav.clock')}
+    <time class="tabular" data-clock>{clock}</time>
+    JST
+  </p>
+  <div class="flex items-center gap-0.5 justify-self-end">
     {
       links.map((l) => (
         <a
           href={l.href}
           aria-current={current === l.id ? 'page' : undefined}
           class:list={[
-            'tap rounded-full px-3 font-medium whitespace-nowrap transition',
+            'label tap rounded-full px-3 whitespace-nowrap transition',
             variant === 'overlay' ? 'hover:bg-white/15' : 'hover:bg-highlight',
             current === l.id && (variant === 'overlay' ? 'bg-white/15' : 'bg-highlight'),
           ]}
@@ -46,3 +62,15 @@ const links = [
     <slot />
   </div>
 </nav>
+
+<script>
+  const el = document.querySelector<HTMLElement>('[data-clock]');
+  if (el && el.offsetParent !== null) {
+    const f = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
+    const tick = () => {
+      if (!document.hidden) el.textContent = f.format(new Date());
+    };
+    tick();
+    setInterval(tick, 1000);
+  }
+</script>

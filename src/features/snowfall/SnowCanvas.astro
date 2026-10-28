@@ -49,7 +49,7 @@ const when = p.preview ? `${formatWeekday(p.preview.time)} ${formatClock(p.previ
         data-stop-label={t('stop')}
         data-preview-text={t('previewing', { rate: p.preview.rateCmH.toFixed(1), when })}
         aria-pressed="false"
-        class="flex items-center gap-2 rounded-full bg-ink/80 px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur hover:bg-ink"
+        class="label flex min-h-11 items-center gap-2 rounded-full bg-[#0a1220]/80 px-4 text-white backdrop-blur hover:bg-[#0a1220]"
       >
         <Icon name="snow" size={16} />
         <span data-label>{t('preview')}</span>

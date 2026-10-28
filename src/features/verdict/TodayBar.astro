@@ -22,26 +22,26 @@ const p = conditions?.powder;
 const updatedAt = conditions?.observed?.observedAt ?? conditions?.generatedAt ?? null;
 ---
 
-<div class="today-bar glass fixed inset-x-0 top-0 z-40 rounded-none border-x-0 border-t-0 pt-[env(safe-area-inset-top)]" data-today-bar>
-  <div class="mx-auto flex min-h-14 max-w-7xl items-center gap-3 px-4 text-sm sm:px-6 lg:px-8">
-    <a href="#top" class="tap flex items-baseline gap-2 font-medium" aria-label={t('bar.top')}>
-      <span class="font-display text-[1.75rem] leading-none">{word}</span>
+<div class="today-bar fixed inset-x-0 top-0 z-40 border-b border-line pt-[env(safe-area-inset-top)]" data-today-bar>
+  <div class="mx-auto flex min-h-14 max-w-[90rem] items-center gap-4 px-4 sm:px-6 lg:px-10">
+    <a href="#top" class="tap flex items-baseline gap-2" aria-label={t('bar.top')}>
+      <span class="font-display text-[1.9rem] leading-none">{word}</span>
     </a>
     {
       p && (
-        <p class="flex items-center gap-3 text-ink-muted">
+        <p class="label flex items-center gap-3 text-ink-muted">
           <span>
-            <strong class="font-semibold text-ink">{p.score}</strong>/100
+            <strong class="font-medium text-ink">{p.score}</strong>/100
           </span>
           <span aria-hidden="true">·</span>
           <span>
-            {t('bar.fresh')} <strong class="font-semibold text-ink">{formatCm(p.freshCm)} cm</strong>
+            {t('bar.fresh')} <strong class="font-medium text-ink">{formatCm(p.freshCm)} cm</strong>
           </span>
         </p>
       )
     }
-    <span class="ml-auto hidden text-ink-muted sm:inline">{updatedAt && t('updated', { time: formatClock(updatedAt) })}</span>
-    <a href="/season" class="tap hidden rounded-full px-3 font-medium hover:bg-highlight md:inline-flex">{t('bar.season')}</a>
+    <span class="label ml-auto hidden text-ink-muted sm:inline">{updatedAt && t('updated', { time: formatClock(updatedAt) })}</span>
+    <a href="/season" class="label tap hidden rounded-full px-3 hover:bg-highlight md:inline-flex">{t('bar.season')}</a>
   </div>
 </div>
 
