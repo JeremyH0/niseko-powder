@@ -1,76 +1,65 @@
 ---
 /**
- * The hero landscape: far hills, Yōtei, the Annupuri range, valley fog, a fir forest edge and
- * the near snowfield (painted in the page colour so the hero melts into the content).
- * Geometry comes from landscape.ts; colours from the sky tokens, so the scene follows the
- * time of day and the weather.
+ * The hero landscape: the real skyline from the edge of Kutchan (Yōtei, the Annupuri range),
+ * built from elevation data by scripts/build-panorama.ts. Stacked colour layers, each cut to
+ * the vector skyline and shaped by a texture mask rendered from the same terrain: snow (by
+ * real altitude, slope and gullies), shade (by how each slope faces the sun) and haze (by
+ * real distance). Colours come from the sky tokens, so the scene follows the time of day
+ * and the weather. CSS masks, not <image>: decoration never becomes the page's LCP.
+ *
+ * The frame keeps the drawing's aspect ratio: on wide screens it crops sky, on phones it
+ * crops the sides around a focal point (Yōtei) instead of shrinking the mountains.
  */
-import { landscape, type Light, type Snowline } from './landscape.ts';
+import { panorama } from './panorama.niseko.gen.ts';
+import type { Light, Snowline } from './verdict.ts';
 
 interface Props {
   snowline: Snowline;
   light: Light;
-  annupuriLabel: string;
-  yoteiLabel: string;
+  labels: Record<'yotei' | 'annupuri', string>;
 }
-const { snowline, light, annupuriLabel, yoteiLabel } = Astro.props;
-const l = landscape({ snowline, light });
-const [ax, ay] = l.range.summit;
-const [yx, yy] = l.yotei.summit;
+const { snowline, light, labels } = Astro.props;
+const { width: W, height: H, skyline, peaks } = panorama;
+const tex = (name: string) => `--tex:url(/terrain/niseko/${name}.png)`;
+const yotei = peaks.find((p) => p.id === 'yotei');
+const focus = yotei ? yotei.x / W + 0.08 : 0.5;
+const skylineSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${skyline}"/></svg>`;
+const skylineUrl = `url("data:image/svg+xml,${encodeURIComponent(skylineSvg)}")`;
+
+// The near snowfield, in the page colour so the hero melts into the content.
+const front = Array.from({ length: 61 }, (_, i) => {
+  const x = (i * W) / 60;
+  return `L${x.toFixed(0)} ${(H - 22 + Math.sin(x / 190) * 4 + Math.sin(x / 71) * 1.6).toFixed(1)}`;
+}).join('');
+const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(2)}%`;
 ---
 
-<div class="pointer-events-none absolute inset-x-0 bottom-0" aria-hidden="true">
-  <svg viewBox="0 0 1200 320" preserveAspectRatio="xMidYMax slice" class="block h-[clamp(160px,28vw,530px)] w-full">
-    <defs>
-      <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="var(--fog)" stop-opacity="0"></stop>
-        <stop offset="0.65" stop-color="var(--fog)"></stop>
-        <stop offset="1" stop-color="var(--fog)" stop-opacity="0"></stop>
-      </linearGradient>
-      <linearGradient id="yotei-fill" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="var(--ridge-far)"></stop>
-        <stop offset="1" stop-color="var(--distant)"></stop>
-      </linearGradient>
-      <linearGradient id="range-fill" x1="0" y1="0.15" x2="0" y2="1">
-        <stop offset="0" stop-color="var(--ridge-mid)"></stop>
-        <stop offset="1" stop-color="var(--ridge-near)"></stop>
-      </linearGradient>
-      <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#040b1c" stop-opacity="0.3"></stop>
-        <stop offset="1" stop-color="#040b1c" stop-opacity="0.06"></stop>
-      </linearGradient>
-      <linearGradient id="snow-fill" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="var(--cap)"></stop>
-        <stop offset="1" stop-color="var(--cap)" stop-opacity="0.82"></stop>
-      </linearGradient>
-    </defs>
-
-    <!-- Far layer (sinks most on scroll): horizon + Yōtei, hazed by distance -->
-    <g class="parallax" style="--depth:70px">
-      <path d={l.distant} fill="var(--distant)" opacity="0.7"></path>
-      <path d={l.yotei.body} fill="url(#yotei-fill)"></path>
-      {l.yotei.snow && <path d={l.yotei.snow} fill="url(#snow-fill)" opacity="0.92"></path>}
-      <path d={l.yotei.shadow} fill="url(#shade)" opacity="0.75"></path>
-      <text x={yx - 24} y={yy - 12} text-anchor="end" font-size="13" fill="#fff" opacity="0.78" style="font-family:var(--font-mono);letter-spacing:0.14em;text-transform:uppercase">{yoteiLabel}</text>
-    </g>
-
-    <!-- Valley fog between the volcano and the range -->
-    <rect class="fog" x="-60" y="168" width="1320" height="96" fill="url(#haze)"></rect>
-
-    <!-- Niseko Annupuri range (middle layer) -->
-    <g class="parallax" style="--depth:28px">
-      <path d={l.range.body} fill="url(#range-fill)"></path>
-      {l.range.snow && <path d={l.range.snow} fill="url(#snow-fill)"></path>}
-      <path d={l.range.shadow} fill="url(#shade)"></path>
-      <text x={ax - 34} y={ay - 14} text-anchor="start" font-size="13" fill="#fff" opacity="0.82" style="font-family:var(--font-mono);letter-spacing:0.14em;text-transform:uppercase">{annupuriLabel}</text>
-    </g>
-
-    <!-- Low fog, then the fir forest edge -->
-    <rect class="fog" style="animation-delay:-9s" x="-60" y="226" width="1320" height="56" fill="url(#haze)" opacity="0.85"></rect>
-    <path d={l.forest.ground} fill="var(--ridge-near)"></path>
-    <path d={l.forest.trees} fill="var(--ridge-near)"></path>
-
-    <!-- Near snowfield in the page colour -->
-    <path d={l.front} fill="var(--paper)"></path>
-  </svg>
+<div class="land pointer-events-none absolute inset-x-0 bottom-0 z-[1]" aria-hidden="true" style={`--focus-sm:${focus.toFixed(3)};--ratio:${W / H}`}>
+  <div class="land-frame">
+    <div class="parallax absolute inset-0" style={`--depth:56px;--skyline:${skylineUrl}`}>
+      <div class="land-layer land-rock"></div>
+      {snowline !== 'none' && <div class="land-layer land-tex land-snow" style={tex(`snow-${snowline}`)}></div>}
+      <div class="land-layer land-tex land-shade" style={tex(`shade-${light}`)}></div>
+      <div class="land-layer land-tex land-haze" style={tex('haze')}></div>
+      <div class="land-layer land-veil"></div>
+      {
+        peaks.map((p) => (
+          <span class="peak-label" style={`left:${pct(p.x, W)};top:${pct(p.y, H)}`}>
+            {labels[p.id as 'yotei' | 'annupuri']}
+          </span>
+        ))
+      }
+    </div>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" class="absolute inset-0 h-full w-full">
+      <defs>
+        <linearGradient id="land-mist" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" style="stop-color:var(--haze);stop-opacity:0"></stop>
+          <stop offset="0.7" style="stop-color:var(--haze);stop-opacity:var(--mist)"></stop>
+          <stop offset="1" style="stop-color:var(--haze);stop-opacity:0"></stop>
+        </linearGradient>
+      </defs>
+      <rect class="fog" x={-W * 0.05} y={H * 0.74} width={W * 1.1} height={H * 0.2} fill="url(#land-mist)"></rect>
+      <path d={`M0 ${H}${front}L${W} ${H}Z`} fill="var(--paper)"></path>
+    </svg>
+  </div>
 </div>

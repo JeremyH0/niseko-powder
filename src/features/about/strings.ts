@@ -43,6 +43,6 @@ export const aboutStrings = defineMessages({
 
     'privacy.title': 'Privacy & credits',
     'privacy.text':
-      'Free and non-commercial: no ads, no cookies, no tracking. Observations: Japan Meteorological Agency. Forecast data: Open-Meteo.com (CC BY 4.0). Raw data for your own projects: /api/conditions.json.',
+      'Free and non-commercial: no ads, no cookies, no tracking. Observations: Japan Meteorological Agency. Forecast data: Open-Meteo.com (CC BY 4.0). The landscape at the top is the real skyline seen from Kutchan, computed from SRTM elevation data (U.S. Geological Survey). Raw data for your own projects: /api/conditions.json.',
   },
 });

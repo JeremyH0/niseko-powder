@@ -19,7 +19,8 @@
     "cf-typegen": "wrangler types",
     "postinstall": "wrangler types",
     "smoke": "node scripts/smoke.ts",
-    "seed:season": "node scripts/seed-season-history.ts"
+    "seed:season": "node scripts/seed-season-history.ts",
+    "build:panorama": "node scripts/build-panorama.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.2",

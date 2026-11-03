@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Conditions } from '../../lib/data/types.ts';
-import { flakeCount, snowfallParams } from './intensity.ts';
+import { dropCount, flakeCount, snowfallParams } from './intensity.ts';
 
 const NOW = new Date('2026-01-15T21:00:00Z');
 const hour = (offsetH: number, snowfallCm: number) => ({
@@ -38,7 +38,15 @@ describe('snowfallParams', () => {
   });
 
   it('is calm and empty without data', () => {
-    expect(snowfallParams(null, NOW)).toMatchObject({ rateCmH: 0, preview: null });
+    expect(snowfallParams(null, NOW)).toMatchObject({ rateCmH: 0, rainMmH: 0, preview: null });
+  });
+
+  it('reads rain at the base from the model', () => {
+    const wet = {
+      ...c,
+      forecast: { points: [...(c.forecast?.points ?? []), { id: 'base', hourly: [{ ...hour(0, 0), rainMm: 2.4 }] }] },
+    } as unknown as Conditions;
+    expect(snowfallParams(wet, NOW).rainMmH).toBe(2.4);
   });
 });
 
@@ -48,5 +56,14 @@ describe('flakeCount', () => {
     expect(flakeCount(0.5)).toBeGreaterThan(50);
     expect(flakeCount(3)).toBeGreaterThan(flakeCount(1));
     expect(flakeCount(20)).toBe(420);
+  });
+});
+
+describe('dropCount', () => {
+  it('no rain → no drops; heavier → more, capped', () => {
+    expect(dropCount(0)).toBe(0);
+    expect(dropCount(0.5)).toBeGreaterThan(50);
+    expect(dropCount(4)).toBeGreaterThan(dropCount(1));
+    expect(dropCount(50)).toBe(260);
   });
 });

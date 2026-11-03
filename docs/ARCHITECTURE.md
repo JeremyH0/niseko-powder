@@ -42,7 +42,7 @@ src/
                          ChartFrame + chart-interact.ts (hover/touch/keyboard read-out for every chart)
   features/
     verdict/             hero: frosted verdict, headline, score ring, powder stake, reasons, sky;
-                         landscape.ts generates the mountains (seeded noise, shading, data-driven snowline)
+                         Mountains.astro draws the real skyline (panorama.<location>.gen.ts + masks)
     snowfall/            live canvas (client script) + intensity maths
     outlook/             at-a-glance tiles (fresh / next 24 h / next big snow / town now)
     forecast/            48-hour SVG chart + 7-day list
@@ -118,6 +118,15 @@ Key properties:
   marquee; all behind `prefers-reduced-motion: no-preference` (+ `@supports` for scroll-driven).
   Sky colours are two-layered: time of day sets `--p-*`, weather mixes them into `--sky-*`.
   Never let a custom property read its own value: `global-css.test.ts` fails on cycles.
+- Hero landscape = real terrain. `npm run build:panorama` ray-casts AWS Terrain Tiles (SRTM)
+  from the viewpoint in `config/locations.ts` (`panorama`), per pixel (`lib/terrain/raster.ts`),
+  and writes (a) the skyline as one SVG path in `features/verdict/panorama.<id>.gen.ts` and
+  (b) alpha masks in `public/terrain/<id>/`: `snow-peaks` / `snow-full` (altitude, slope,
+  gullies, forest line), `shade-left` / `-right` (slope vs sun) and `haze` (distance).
+  `Mountains.astro` stacks colour layers (`--rock`, `--cap`, `--shade`, `--haze`, weather
+  `--veil`) cut to the skyline with CSS `mask-image` + `mask-composite: intersect` — CSS
+  masks so the texture is never an LCP candidate. Re-run the script only when the view or
+  the mask recipe (`lib/terrain/masks.ts`) changes; commit its output.
 - Charts follow the dataviz rules: one axis per panel (small multiples, never dual-axis), ≤ 24px
   bars with a 4px rounded data-end, solid hairline grids, legend + selective direct labels,
   hover/keyboard tooltip, and a table view. Series colours validated for colour blindness.

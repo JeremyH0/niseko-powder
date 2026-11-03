@@ -21,4 +21,9 @@ export const attributions = [
     text: 'Weather data by Open-Meteo.com (CC BY 4.0)',
     href: 'https://open-meteo.com/',
   },
+  {
+    id: 'terrain',
+    text: 'Landscape: SRTM terrain data courtesy of the U.S. Geological Survey',
+    href: 'https://registry.opendata.aws/terrain-tiles/',
+  },
 ] as const;

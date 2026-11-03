@@ -29,6 +29,7 @@ const when = p.preview ? `${formatWeekday(p.preview.time)} ${formatClock(p.previ
     <canvas
       data-snowfall
       data-rate={p.rateCmH}
+      data-rain={p.rainMmH}
       data-wind={p.windMs}
       data-wind-from={p.windFromDeg}
       data-temp={p.tempC}
@@ -49,10 +50,10 @@ const when = p.preview ? `${formatWeekday(p.preview.time)} ${formatClock(p.previ
         data-stop-label={t('stop')}
         data-preview-text={t('previewing', { rate: p.preview.rateCmH.toFixed(1), when })}
         aria-pressed="false"
-        class="label flex min-h-11 items-center gap-2 rounded-full bg-[#0a1220]/80 px-4 text-white backdrop-blur hover:bg-[#0a1220]"
+        class="label flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full bg-[#0a1220]/80 px-4 text-white backdrop-blur hover:bg-[#0a1220] max-sm:px-0"
       >
         <Icon name="snow" size={16} />
-        <span data-label>{t('preview')}</span>
+        <span data-label class="max-sm:sr-only">{t('preview')}</span>
       </button>
       <p data-snow-status role="status" class="max-w-[16rem] text-right text-xs text-ink-muted" />
     </div>

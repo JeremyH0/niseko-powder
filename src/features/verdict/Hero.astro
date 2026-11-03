@@ -70,12 +70,13 @@ const seasonLine =
   class="sky grain relative isolate flex flex-col overflow-hidden sm:min-h-[min(94svh,920px)] xl:min-h-svh"
   data-sky={m.sky}
   data-weather={m.weather}
+  data-light={m.light}
   data-verdict={powder?.verdict ?? 'none'}
 >
   <div class="stars pointer-events-none absolute inset-x-0 top-0 h-[65%]" aria-hidden="true"></div>
   <slot name="atmosphere" />
 
-  <div class="relative z-10 mx-auto flex w-full max-w-[90rem] flex-1 flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[clamp(170px,28vw,400px)] sm:px-6 lg:px-10 xl:pb-[clamp(380px,calc(28vw+40px),570px)]">
+  <div class="relative z-10 mx-auto flex w-full max-w-[90rem] flex-1 flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[clamp(175px,calc(13vw+110px),340px)] sm:px-6 lg:px-10">
     <SiteNav variant="overlay" current="home">
       {
         delayedBy !== null ? (
@@ -157,6 +158,6 @@ const seasonLine =
     </div>
   </div>
 
-  <Mountains snowline={m.snowline} light={m.light} annupuriLabel={t('mountain.annupuri')} yoteiLabel={t('mountain.yotei')} />
+  <Mountains snowline={m.snowline} light={m.light} labels={{ yotei: t('mountain.yotei'), annupuri: t('mountain.annupuri') }} />
   <slot name="controls" />
 </header>

@@ -119,6 +119,23 @@ is plenty.
 
 ---
 
+## 2b. Terrain — the hero landscape (build time only)
+
+- AWS Terrain Tiles (Mapzen / Tilezen "Terrarium" PNGs, zoom 12, ~30 m), public dataset:
+  `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`,
+  elevation = R·256 + G + B/256 − 32768 m. For Japan the source is SRTM / GMTED2010 (USGS,
+  public domain). Credit: "SRTM terrain data courtesy of the U.S. Geological Survey" (Tilezen's
+  attribution guide), shown in the footer.
+- Fetched only by `npm run build:panorama` (scripts/build-panorama.ts), cached in `.cache/terrain/`
+  (~70 tiles, git-ignored). Visitors never call it; the output (skyline path + alpha masks in
+  `public/terrain/<location>/`) is committed.
+- Not used: GSI 標高タイル (hyōkō tairu, "elevation tiles") from 国土地理院 (Kokudo Chiriin, the
+  Geospatial Information Authority of Japan). Better resolution, but they derive from
+  基盤地図情報 (kiban chizu jōhō, "fundamental geospatial data"), a survey result; publishing
+  derived maps may need permission under 測量法 (sokuryō-hō, the Survey Act). Worth revisiting.
+
+---
+
 ## 3. Links only (no scraping, no embedding without permission)
 - Official Niseko United site — lift status & webcams (link out).
 - Niseko Avalanche Information (backcountry conditions) — link out.

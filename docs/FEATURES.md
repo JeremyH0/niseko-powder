@@ -6,6 +6,10 @@ Living list. Add ideas freely; build them one at a time with the "Add a feature"
 ## Ideas
 
 ### Snow & weather
+- [ ] **Drifting cloud bank** over the peaks on snowy/cloudy days (soft layered clouds hiding Yōtei's
+  summit), instead of today's even veil. (S–M)
+- [ ] **Sharper terrain** from GSI 10 m elevation tiles once the Survey Act (測量法, sokuryō-hō)
+  question is checked; same pipeline, better gullies. (S)
 - [ ] **Powder alerts** — opt-in email or Web Push when the forecast shows 20 cm+ overnight. (M–L)
 - [ ] **Best day this week** callout on the homepage. (S) — partly shipped as "Next big snow".
 - [ ] **Hour-by-hour tonight** — when will the snow actually fall, so people know if it's a
@@ -48,6 +52,12 @@ Living list. Add ideas freely; build them one at a time with the "Add a feature"
 _(none yet)_
 
 ## Shipped
+- 2026-11-04 — **Real landscape + camera-like snowfall**: the hero mountains are the actual
+  skyline from Kutchan (Yōtei, the Annupuri range), ray-cast from SRTM elevation data at build
+  time, with snow by real altitude and gullies, slopes shaded by the sun's side, haze by real
+  distance; colours follow time of day and weather (snowing = peaks veiled). Snowfall has depth
+  of field (crisp far flakes, soft near ones, rare out-of-focus flakes at the lens) and rain
+  streaks when it rains at the base.
 - 2026-10-28 — **Editorial redesign "The Daily Powder Report"**: Instrument Serif (roman +
   italic) / Geist / Geist Mono type system, masthead with season day or countdown, live JST
   clock, ruled instrument panel with scored reasons, **live ticker band**, hairline grids,

@@ -200,84 +200,112 @@
 
 /*
  * Time of day sets the base palette (--p-*); weather then washes over it into the final
- * --sky-* / --ridge-* tokens. Two layers on purpose: a custom property that mixes its own
- * value (--sky-top: color-mix(…, var(--sky-top))) is a cycle, the whole sky turns invalid
- * and the hero goes white — exactly on snowy days.
+ * --sky-* tokens. Two layers on purpose: a custom property that mixes its own value
+ * (--sky-top: color-mix(…, var(--sky-top))) is a cycle, the whole sky turns invalid and the
+ * hero goes white — exactly on snowy days.
+ *
+ * The landscape is tinted by: --rock (forest and rock), --cap (lit snow), --shade (snow in
+ * shadow), --haze (air, = the horizon), with weather adding a --veil over the peaks and
+ * --mist in the valley. Night is the base.
  */
 .sky {
-  --p-top: #050b1f;
-  --p-mid: #13224a;
-  --p-bottom: #2b3f73;
-  --p-far: #31467d;
-  --p-ridge: #1a2850;
+  --p-top: #030714;
+  --p-mid: #0b1633;
+  --p-bottom: #1f3260;
   --sky-top: var(--p-top);
   --sky-mid: var(--p-mid);
   --sky-bottom: var(--p-bottom);
-  --ridge-far: var(--p-far);
-  --ridge-mid: var(--p-ridge);
-  --fog: rgb(170 195 240 / 0.18);
+  --haze: var(--sky-bottom);
+  --rock: #0b1224;
   /* Snow takes the light of the sky: moonlit blue at night, alpenglow at dawn and dusk. */
-  --cap: #c3d1ea;
-  --ridge-near: color-mix(in oklab, var(--ridge-mid) 45%, #02050d);
-  --distant: color-mix(in oklab, var(--sky-bottom) 55%, var(--ridge-far));
+  --cap: #a9bbdc;
+  --shade: #1b2850;
+  --shade-a: 0.8;
+  --haze-a: 0.85;
+  --veil-top: 0;
+  --veil-bottom: 0;
+  --mist: 0.35;
+  --glow: rgb(150 180 255 / 0.1);
+  --sun-x: 78%;
+  --peak-ink: rgb(255 255 255 / 0.78);
   --ring: #ffffff;
   --stars: 1;
   color: #fff;
   background:
-    radial-gradient(90% 60% at 72% 8%, rgb(255 255 255 / 0.07), transparent 60%),
-    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 45%, var(--sky-bottom) 85%);
+    radial-gradient(55% 45% at var(--sun-x) 92%, var(--glow), transparent 70%),
+    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 48%, var(--sky-bottom) 92%);
+}
+.sky[data-light='left'] {
+  --sun-x: 18%;
 }
 .sky[data-sky='dawn'] {
-  --cap: #f7dcd6;
-  --p-top: #16214d;
-  --p-mid: #5a4f86;
-  --p-bottom: #e3a39a;
-  --p-far: #8b7aa6;
-  --p-ridge: #3d3a6d;
-  --fog: rgb(255 210 200 / 0.22);
-  --stars: 0.25;
+  --p-top: #182252;
+  --p-mid: #5a5a94;
+  --p-bottom: #f1b6a0;
+  --rock: #352f4c;
+  --cap: #ffe2d8;
+  --shade: #7f78ad;
+  --glow: rgb(255 196 150 / 0.45);
+  --stars: 0.2;
 }
 .sky[data-sky='day'] {
-  --cap: #f4f8ff;
-  --p-top: #0f4a93;
-  --p-mid: #2f74c2;
-  --p-bottom: #8cc0ee;
-  --p-far: #a9c8e8;
-  --p-ridge: #5684b8;
-  --fog: rgb(255 255 255 / 0.28);
+  --p-top: #123f7c;
+  --p-mid: #2c6ab4;
+  --p-bottom: #c4daef;
+  --rock: #3a4657;
+  --cap: #f7faff;
+  --shade: #7f9ac4;
+  --shade-a: 0.7;
+  --haze-a: 0.7;
+  --glow: rgb(255 248 235 / 0.35);
+  --peak-ink: rgb(10 25 50 / 0.62);
   --stars: 0;
 }
 .sky[data-sky='dusk'] {
-  --cap: #f2d2cc;
-  --p-top: #141a46;
-  --p-mid: #4b3a78;
-  --p-bottom: #e08a6d;
-  --p-far: #8c6c8f;
-  --p-ridge: #382e5e;
-  --fog: rgb(255 190 170 / 0.2);
+  --p-top: #141a48;
+  --p-mid: #4c3d80;
+  --p-bottom: #ef9c7c;
+  --rock: #312843;
+  --cap: #f9d3c5;
+  --shade: #6f5f9a;
+  --glow: rgb(255 170 120 / 0.45);
   --stars: 0.3;
 }
-/* Weather washes over the time-of-day palette. */
+/* Weather washes over the time-of-day palette, and hides the peaks when it snows. */
 .sky[data-weather='snow'] {
-  --sky-top: color-mix(in oklab, #2f3a4b 60%, var(--p-top));
-  --sky-mid: color-mix(in oklab, #5c6879 55%, var(--p-mid));
-  --sky-bottom: color-mix(in oklab, #a7b2c1 55%, var(--p-bottom));
-  --ridge-far: color-mix(in oklab, #c9d1db 60%, var(--p-far));
-  --ridge-mid: color-mix(in oklab, #75808f 50%, var(--p-ridge));
-  --fog: rgb(235 240 248 / 0.4);
+  --sky-top: color-mix(in oklab, #2d3848 62%, var(--p-top));
+  --sky-mid: color-mix(in oklab, #5a6677 58%, var(--p-mid));
+  --sky-bottom: color-mix(in oklab, #b3bdca 60%, var(--p-bottom));
+  --shade-a: 0.45;
+  --haze-a: 1;
+  --veil-top: 0.62;
+  --veil-bottom: 0.18;
+  --mist: 0.6;
+  --glow: transparent;
+  --peak-ink: rgb(255 255 255 / 0.85);
   --stars: 0;
 }
 .sky[data-weather='rain'] {
-  --sky-top: color-mix(in oklab, #232a35 55%, var(--p-top));
-  --sky-mid: color-mix(in oklab, #434c59 50%, var(--p-mid));
-  --sky-bottom: color-mix(in oklab, #737e8c 50%, var(--p-bottom));
-  --fog: rgb(200 210 225 / 0.3);
+  --sky-top: color-mix(in oklab, #222a35 58%, var(--p-top));
+  --sky-mid: color-mix(in oklab, #424b58 52%, var(--p-mid));
+  --sky-bottom: color-mix(in oklab, #7b8694 52%, var(--p-bottom));
+  --shade-a: 0.5;
+  --haze-a: 1;
+  --veil-top: 0.45;
+  --veil-bottom: 0.12;
+  --mist: 0.5;
+  --glow: transparent;
+  --peak-ink: rgb(255 255 255 / 0.85);
   --stars: 0;
 }
 .sky[data-weather='cloud'] {
-  --sky-top: color-mix(in oklab, #2c3644 30%, var(--p-top));
-  --sky-mid: color-mix(in oklab, #4d5868 25%, var(--p-mid));
-  --sky-bottom: color-mix(in oklab, #8b96a6 25%, var(--p-bottom));
+  --sky-top: color-mix(in oklab, #2c3644 32%, var(--p-top));
+  --sky-mid: color-mix(in oklab, #4d5868 28%, var(--p-mid));
+  --sky-bottom: color-mix(in oklab, #96a1b0 30%, var(--p-bottom));
+  --shade-a: 0.55;
+  --veil-top: 0.2;
+  --veil-bottom: 0.05;
+  --glow: rgb(255 255 255 / 0.08);
   --stars: 0;
 }
 .sky[data-verdict='epic'] {
@@ -302,6 +330,94 @@
     radial-gradient(1px 1px at 52% 4%, #fff 50%, transparent 51%),
     radial-gradient(1px 1px at 36% 34%, #fff 50%, transparent 51%);
   background-size: 640px 420px;
+}
+
+/*
+ * The landscape frame keeps the drawing's aspect ratio. Its height is the strip the hero
+ * reserves; it grows wider than the screen on phones (cropping the sides around --focus,
+ * Yōtei) and taller on very wide screens (cropping empty sky), never distorting.
+ */
+.land {
+  --land-h: clamp(270px, calc(22vw + 160px), 560px);
+  --focus: var(--focus-sm);
+  --land-w: max(100%, calc(var(--land-h) * var(--ratio)));
+  block-size: max(var(--land-h), calc(100vw / var(--ratio)));
+  overflow: hidden;
+}
+@media (min-width: 64rem) {
+  /* Wide screens: the whole panorama, barely cropped, centred. */
+  .land {
+    --land-h: calc(108vw / var(--ratio));
+    --focus: 0.5;
+  }
+}
+.land-frame {
+  position: absolute;
+  inset-block-end: 0;
+  inline-size: var(--land-w);
+  aspect-ratio: var(--ratio);
+  inset-inline-start: clamp(100% - var(--land-w), 50% - var(--focus) * var(--land-w), 0px);
+}
+/* Colour layers cut to the real skyline; textures intersect with it. */
+.land-layer {
+  position: absolute;
+  inset: 0;
+  -webkit-mask: var(--skyline) 0 0 / 100% 100% no-repeat;
+  mask: var(--skyline) 0 0 / 100% 100% no-repeat;
+}
+.land-rock {
+  background: var(--rock);
+}
+.land-veil {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--haze) calc(var(--veil-top) * 100%), transparent),
+    color-mix(in oklab, var(--haze) calc(var(--veil-bottom) * 100%), transparent)
+  );
+}
+.land-tex {
+  display: none;
+}
+@supports (mask-composite: intersect) {
+  .land-tex {
+    display: block;
+    mask-image: var(--tex), var(--skyline);
+    mask-size: 100% 100%;
+    mask-repeat: no-repeat;
+    mask-composite: intersect;
+  }
+}
+.land-snow {
+  background: var(--cap);
+}
+.land-shade {
+  background: var(--shade);
+  opacity: var(--shade-a);
+}
+.land-haze {
+  background: var(--haze);
+  opacity: var(--haze-a);
+}
+/* Summit labels: real text at a fixed size, pinned to the summit with a hairline. */
+.peak-label {
+  position: absolute;
+  translate: -50% calc(-100% - 18px);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--peak-ink);
+  &::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-start: calc(100% + 4px);
+    inline-size: 1px;
+    block-size: 10px;
+    background: currentColor;
+    opacity: 0.6;
+  }
 }
 
 .sky-text {

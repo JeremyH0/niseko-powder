@@ -1,0 +1,131 @@
+/**
+ * Builds the hero landscape from real terrain: the view from the edge of Kutchan, ray-cast
+ * over AWS Terrain Tiles (public-domain SRTM / GMTED elevation, Terrarium PNGs).
+ * Outputs the skyline as a vector path (src/features/verdict/panorama.<location>.gen.ts)
+ * and alpha texture masks (public/terrain/<location>/*.png) for snow, shade and haze.
+ *
+ *   npm run build:panorama
+ *   npm run build:panorama -- --from 42.93,140.80 --az 150,262   # try another viewpoint
+ *
+ * Tiles are cached in .cache/terrain/ (git-ignored), so re-runs are offline and polite.
+ * The output is committed; this only needs re-running when the view or the masks change.
+ */
+import { existsSync } from 'node:fs';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { getLocation, type LocationId } from '../src/config/locations.ts';
+import { site } from '../src/config/site.ts';
+import { bearingTo, elevationAngle } from '../src/lib/terrain/geo.ts';
+import { buildMasks } from '../src/lib/terrain/masks.ts';
+import { castRaster, encodeAlphaPng } from '../src/lib/terrain/raster.ts';
+import { project, skylinePath, type PanoramaScene } from '../src/lib/terrain/render.ts';
+import { sampler, terrariumHeights, tileXY } from '../src/lib/terrain/terrarium.ts';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const CACHE = join(ROOT, '.cache', 'terrain');
+const TILES = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium';
+const Z = 12;
+
+const args = process.argv.slice(2);
+const flag = (name: string) => (args.includes(name) ? (args[args.indexOf(name) + 1] as string) : undefined);
+const locationId = (args.find((a, i) => !a.startsWith('--') && !args[i - 1]?.startsWith('--')) ?? 'niseko') as LocationId;
+const location = getLocation(locationId);
+const fromFlag = flag('--from')?.split(',').map(Number);
+const azFlag = flag('--az')?.split(',').map(Number);
+const view = {
+  ...location.panorama,
+  ...(fromFlag ? { from: { lat: fromFlag[0] as number, lon: fromFlag[1] as number, elevationM: Number.NaN } } : {}),
+  ...(azFlag ? { azFrom: azFlag[0] as number, azTo: azFlag[1] as number } : {}),
+};
+
+// ---------------------------------------------------------------- tiles
+
+const tiles = new Map<string, Float32Array | null>();
+
+async function loadTile(x: number, y: number): Promise<void> {
+  const key = `${x}/${y}`;
+  if (tiles.has(key)) return;
+  const file = join(CACHE, String(Z), String(x), `${y}.png`);
+  if (!existsSync(file)) {
+    const res = await fetch(`${TILES}/${Z}/${x}/${y}.png`, { headers: { 'User-Agent': site.userAgent } });
+    if (!res.ok) {
+      console.warn(`  ${res.status} tile ${Z}/${key}`);
+      tiles.set(key, null);
+      return;
+    }
+    await mkdir(dirname(file), { recursive: true });
+    await writeFile(file, new Uint8Array(await res.arrayBuffer()));
+    console.log(`  fetched ${Z}/${key}`);
+  }
+  tiles.set(key, terrariumHeights(new Uint8Array(await readFile(file))));
+}
+
+// Every tile within reach of the rays: a box around the viewpoint, trimmed to the wedge.
+const [cx, cy] = tileXY(view.from.lat, view.from.lon, Z);
+const kmPerTile = (40_075 * Math.cos((view.from.lat * Math.PI) / 180)) / 2 ** Z;
+const reach = Math.ceil(view.maxKm / kmPerTile) + 1;
+for (let dy = -reach; dy <= reach; dy++) {
+  for (let dx = -reach; dx <= reach; dx++) {
+    const bearing = ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360;
+    const near = Math.hypot(dx, dy) <= 1.5;
+    if (!near && (bearing < view.azFrom - 25 || bearing > view.azTo + 25)) continue;
+    await loadTile(Math.floor(cx) + dx, Math.floor(cy) + dy);
+  }
+}
+const elevation = sampler(Z, (x, y) => tiles.get(`${x}/${y}`) ?? null);
+const groundM = Number.isNaN(view.from.elevationM) ? Math.round(elevation(view.from.lat, view.from.lon)) : view.from.elevationM;
+const eyeM = groundM + 2;
+
+const { width, height, horizonY, exaggeration, tolerance } = view.render;
+const raster = castRaster(elevation, {
+  lat: view.from.lat,
+  lon: view.from.lon,
+  eyeM,
+  azFrom: view.azFrom,
+  azTo: view.azTo,
+  maxKm: view.maxKm,
+  width,
+  height,
+  horizonY,
+  exaggeration,
+  lights: [view.lights.left, view.lights.right],
+});
+
+const projection = { azFrom: view.azFrom, azTo: view.azTo, width, horizonY, exaggeration };
+const scene: PanoramaScene = {
+  width,
+  height,
+  skyline: skylinePath(raster.top, width, height, tolerance),
+  // Named summits at their real height (the 30 m elevation model rounds peaks off a little).
+  peaks: view.peaks.map((p) => {
+    const { bearing, m } = bearingTo(view.from.lat, view.from.lon, p.lat, p.lon);
+    const [x, y] = project(projection, bearing, elevationAngle(p.elevationM, m, eyeM));
+    return { id: p.id, x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10, km: Math.round(m / 100) / 10 };
+  }),
+};
+
+const outTs = join(ROOT, 'src', 'features', 'verdict', `panorama.${locationId}.gen.ts`);
+await writeFile(
+  outTs,
+  `/**
+ * GENERATED by scripts/build-panorama.ts — do not edit by hand.
+ * The skyline seen from ${view.from.lat}, ${view.from.lon} (${groundM} m), bearings ${view.azFrom}°–${view.azTo}°.
+ * Terrain: AWS Terrain Tiles (SRTM / GMTED2010, courtesy of the U.S. Geological Survey).
+ */
+import type { PanoramaScene } from '../../lib/terrain/render.ts';
+
+export const panorama: PanoramaScene = ${JSON.stringify(scene)};
+`,
+);
+console.log(`Wrote ${outTs.replace(`${ROOT}/`, '')} (skyline ${(scene.skyline.length / 1024).toFixed(1)} KB)`);
+for (const p of scene.peaks) console.log(`  ${p.id}: x ${p.x}, y ${p.y}, ${p.km} km`);
+
+const masks = buildMasks(raster, { peaksSnowlineM: view.peaksSnowlineM, treelineM: view.treelineM });
+const maskDir = join(ROOT, 'public', 'terrain', locationId);
+await mkdir(maskDir, { recursive: true });
+for (const [name, alpha] of Object.entries(masks)) {
+  const png = encodeAlphaPng(width, height, alpha);
+  await writeFile(join(maskDir, `${name}.png`), png);
+  console.log(`  public/terrain/${locationId}/${name}.png ${(png.length / 1024).toFixed(0)} KB`);
+}

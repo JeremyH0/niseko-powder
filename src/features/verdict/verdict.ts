@@ -21,6 +21,10 @@ export type HeadlineKey =
 
 export type SkyPhase = 'night' | 'dawn' | 'day' | 'dusk';
 export type WeatherState = 'snow' | 'rain' | 'cloud' | 'clear';
+/** How far down the mountains are white: peaks only early season, everything in winter. */
+export type Snowline = 'none' | 'peaks' | 'full';
+/** Side the low sun lights the slopes from. */
+export type Light = 'left' | 'right';
 
 export interface HeroModel {
   word: VerdictWord;
@@ -34,10 +38,8 @@ export interface HeroModel {
   sunset: string;
   weather: WeatherState;
   snowcap: boolean;
-  /** How far down the mountains are white: peaks only early season, everything in winter. */
-  snowline: 'none' | 'peaks' | 'full';
-  /** Side the low sun lights the ridges from (shadows fall the other way). */
-  light: 'left' | 'right';
+  snowline: Snowline;
+  light: Light;
 }
 
 const point = (c: Conditions | null, id: string) => findPoint(c, id);
